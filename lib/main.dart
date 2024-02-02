@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import 'Mapdart/BasicMap.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -31,12 +31,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
   static const List<Widget> _widgetOptions = <Widget>[
-    GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: LatLng(37.42796133580664, -122.085749655962),
-        zoom: 14.4746,
-      ),
-    ),
+    BasicMap()
+    ,
     Text('QR Scanner Page'),
     Text('Page 1'),
     Text('Page 2'),
