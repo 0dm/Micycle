@@ -24,3 +24,4 @@ doc/api/
 *.pcm
 .DS_Store
 .flutter-plugins-dependencies
+.flutter-plugins
