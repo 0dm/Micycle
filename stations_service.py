@@ -16,15 +16,15 @@ class Station(BaseModel):
 
 # Sample station coordinates with names and addresses
 stations = [
-    Station(name="Station A", address="123 Main St", x=1.0, y=2.0),
-    Station(name="Station B", address="456 Oak St", x=3.0, y=4.0),
-    Station(name="Station C", address="789 Pine St", x=5.0, y=6.0),
+    Station(name="Station A", address="123 Main St", x=1.0, y=2.0,bikes=5),
+    Station(name="Station B", address="456 Oak St", x=3.0, y=4.0, bikes=3),
+    Station(name="Station C", address="789 Pine St", x=5.0, y=6.0, bikes=10),
     # will add more
 ]
 def euclidean_distance(x1, y1, x2, y2):
     return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
-@app.post("/nearest_stations/", response_model=List[Station])
+@app.get("/stations", response_model=List[Station])
 def get_nearest_stations(location: Location):
     # Calculate distances to all stations using Euclidean distance
     distances = [
@@ -37,5 +37,5 @@ def get_nearest_stations(location: Location):
 
     # Extract the nearest stations with names and addresses
     nearest_stations = [stations[i] for i in nearest_indices]
-
+    
     return nearest_stations
