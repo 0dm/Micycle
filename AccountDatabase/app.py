@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  # Import CORS
+import hashlib
 import os
 
 app = Flask(__name__)
@@ -20,12 +21,40 @@ class User(db.Model):
 
 @app.route('/create_account', methods=['POST'])
 def create_account():
-    data = request.json
-    user = User(email=data['email'], password=data['password'], display_name=data['displayName'],
+    data = request.get_json()
+    existing_user = User.query.filter_by(email=data['email']).first()
+    if existing_user:
+        return jsonify({"error": "This email address already has an account"}), 409  # 409 Conflict
+    
+    is_admin = data.get('isAdmin', False)
+    admin_code = data.get('adminCode', '')
+
+    if is_admin and admin_code != 'admin':
+        return jsonify({"error": "Invalid admin code"}), 400
+    
+    new_user = User(email=data['email'], password=data['password'], display_name=data['displayName'],
                 is_admin=data['isAdmin'], admin_code=data.get('adminCode', ''))
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({"message": "Account created successfully"}), 201
+    db.session.add(new_user)
+    try:
+        db.session.commit()
+        return jsonify({"message": "Account created successfully"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+# Flask login route example without password hashing
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    user = User.query.filter_by(email=data['email'], password=data['password']).first()
+    if user:
+        return jsonify({"message": "Login successful", "user": {"email": user.email, "display_name": user.display_name}}), 200
+    else:
+        return jsonify({"error": "Invalid email or password"}), 401
+
+
+
 
 if __name__ == '__main__':
     with app.app_context():
