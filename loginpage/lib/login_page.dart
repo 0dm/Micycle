@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'create_account_page.dart'; 
+import 'create_account_page.dart';
 
 class LoginPage extends StatelessWidget {
   @override
@@ -15,23 +15,19 @@ class LoginPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                ),
+                decoration: InputDecoration(hintText: 'Email'),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                ),
+                decoration: InputDecoration(hintText: 'Password'),
               ),
             ),
             ElevatedButton(
               onPressed: () {
-                // Add logic to handle sign in
+                // Implement sign-in logic here
               },
               child: Text('Sign In'),
             ),

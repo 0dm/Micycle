@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CreateAccountPage extends StatefulWidget {
   @override
@@ -16,7 +15,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   bool _isAdmin = false;
 
   Future<void> createAccount() async {
-    var url = 'http://127.0.0.1:5000/create_account'; // Change to your actual server address
+    var url = 'http://127.0.0.1:5000/create_account'; // Update to your actual server address
     var response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -30,13 +29,24 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     );
 
     if (response.statusCode == 201) {
-      print('Account created successfully');
-      // Handle successful account creation here
-      // For example, navigate back to the login page or show a success message
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Success'),
+          content: Text('Account created successfully'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Okay'),
+            ),
+          ],
+        ),
+      );
     } else {
+      // Handle error
       print('Failed to create account');
-      // Handle error here
-      // For example, show an error message
     }
   }
 
@@ -47,28 +57,22 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         title: Text('Create Account'),
       ),
       body: Center(
-        child: SingleChildScrollView( // Added to enable scrolling when the keyboard is visible
+        child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               TextField(
                 controller: _emailController,
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                ),
+                decoration: InputDecoration(hintText: 'Email'),
               ),
               TextField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                ),
+                decoration: InputDecoration(hintText: 'Password'),
               ),
               TextField(
                 controller: _displayNameController,
-                decoration: InputDecoration(
-                  hintText: 'Display Name',
-                ),
+                decoration: InputDecoration(hintText: 'Display Name'),
               ),
               SwitchListTile(
                 title: Text('Admin Account'),
@@ -79,16 +83,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   });
                 },
               ),
-              if (_isAdmin) TextField(
-                controller: _adminCodeController,
-                decoration: InputDecoration(
-                  hintText: 'Admin Code',
+              if (_isAdmin)
+                TextField(
+                  controller: _adminCodeController,
+                  decoration: InputDecoration(hintText: 'Admin Code'),
                 ),
-              ),
               ElevatedButton(
-                onPressed: () {
-                  createAccount(); // Call the create account function when the button is pressed
-                },
+                onPressed: createAccount,
                 child: Text('Create Account'),
               ),
             ],
