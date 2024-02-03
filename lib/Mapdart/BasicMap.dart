@@ -13,15 +13,17 @@ class BasicMap extends StatefulWidget {
 }
 
 class _BasicMapState extends State<BasicMap> {
-    Widget LocationLogo = const ColoredBox(color: Colors.black,);
-    Widget StationLogo = const ColoredBox(color: Colors.green,);
+    Widget LocationLogo = const Icon(Icons.location_on_rounded);
+    Widget StationLogo = const Icon(Icons.pedal_bike_sharp, color: Colors.black, size: 40,);
     LatLng curLoc = LatLng(43.59275, -79.64114);
     bool ifMoved = false;
+    Icon locationActive = Icon(Icons.location_on);
     final LocationService _locationService = LocationService();
     final MapController mapController = MapController();
     Marker? _marker, _marker2;
+    bool isProgramMoved = false;
     final List<LatLng> latLngArray = [
-        LatLng(43.59275, -79.64114), LatLng(44.59275, -79.64114)
+        LatLng(43.59275, -79.64114), LatLng(44.59275, -79.64114), LatLng(44.69275, -79.64114), LatLng(43.59275, -79.74114)
     ];
     
     void _showBottomSheet(int index) {
@@ -39,7 +41,7 @@ class _BasicMapState extends State<BasicMap> {
                     child: Column(
                         children: <Widget>[
                             Image.asset(
-                                'assets\\images\\flutter_logo.png', // Replace with your image asset
+                                'assests/images/placeHolderBike.jpeg', // Replace with your image asset
                                 width: MediaQuery.of(context).size.width, // Set image width to full screen width
                                 height: 150, // Adjust the size accordingly
                                 fit: BoxFit.cover, // Cover the entire width while keeping aspect ratio
@@ -53,7 +55,7 @@ class _BasicMapState extends State<BasicMap> {
                             	alignment: Alignment.centerLeft, // Aligning only this widget to the left
                             	child: Row(
                             	    mainAxisSize: MainAxisSize.min, // To prevent the Row from occupying the entire horizontal space
-                            	    children: [ // Generating 5 buttons
+                            	    children: [ 
                                 		Container(
                                 		    width: 80, // Diameter of the circle
                                 		    height: 80, // Diameter of the circle
@@ -73,12 +75,32 @@ class _BasicMapState extends State<BasicMap> {
                                     			    shape: CircleBorder(),
                                     			    primary: Colors.blue, // Background color of the button
                                     			),
-                                    			child: Text(
-                                    			    'Map', // Button index
-                                    			    style: TextStyle(fontSize: 10), // Smaller text size for the smaller button
+                                    			child: Icon(Icons.directions),
+                                		    ),
+                                		),
+                                        Container(
+                                		    width: 80, // Diameter of the circle
+                                		    height: 80, // Diameter of the circle
+                                		    margin: EdgeInsets.only(right: 8), // Spacing between buttons
+                                		    decoration: BoxDecoration(
+                                    			color: Colors.blue, // Color of the circle
+                                    			shape: BoxShape.circle,
+                                		    ),
+                                		    child: ElevatedButton(
+                                    			onPressed: () {
+                                    			    // Action when the button is pressed
+                                                    Uri _url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey');
+                                                    launchUrl(_url);
+                                    			    
+                                    			},
+                                    			style: ElevatedButton.styleFrom(
+                                    			    shape: CircleBorder(),
+                                    			    primary: Colors.blue, // Background color of the button
                                     			),
+                                    			child: Icon(Icons.directions),
                                 		    ),
                                 		)
+
                                     ],
                             	),
                         	)
@@ -94,8 +116,9 @@ class _BasicMapState extends State<BasicMap> {
     void initState() {
         super.initState();  
         mapController.mapEventStream.listen((MapEvent event) {
-            if (event is MapEventMove) {
+            if (event.source != MapEventSource.mapController) {
                 ifMoved = true;
+                setState((){locationActive = Icon(Icons.location_off);});
             } 
         });
 
@@ -106,13 +129,18 @@ class _BasicMapState extends State<BasicMap> {
             print(e);
         });
         _locationService.onLocationChanged = (newLocation) {
-            setState(() {
-                curLoc = newLocation;
-                if (!ifMoved){
+            curLoc = newLocation;
+            if (!ifMoved){
+                isProgramMoved = true;
+
+                setState(() {
                     mapController.move(newLocation, 15);
-                }
+                });
+                isProgramMoved = false;
                 
-                _marker = Marker(point: newLocation, child: LocationLogo);
+            }
+            setState(() {
+              _marker = Marker(point: newLocation, child: LocationLogo);
             });
         };
 
@@ -158,17 +186,18 @@ class _BasicMapState extends State<BasicMap> {
         		    ),
         		    child: ElevatedButton(
             			onPressed: () {
+                            isProgramMoved = true;
                             ifMoved = false;
                             mapController.move(curLoc, 15);
+                            setState(() {locationActive = Icon(Icons.location_on);});
+                            isProgramMoved=false;
+
             			},
             			style: ElevatedButton.styleFrom(
             			    shape: CircleBorder(),
             			    primary: Colors.blue, // Background color of the button
             			),
-            			child: Text(
-            			    'Map', // Button index
-            			    style: TextStyle(fontSize: 10), // Smaller text size for the smaller button
-            			),
+            			child: locationActive
         		    ),
         		),
 
