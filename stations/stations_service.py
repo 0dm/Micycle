@@ -1,7 +1,6 @@
 from typing import List
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
-from uuid import UUID
 import models
 from database import engine, Sessionlocal
 from sqlalchemy.orm import Session
@@ -48,7 +47,6 @@ def create_station(station: Station, db: Session = Depends(get_db)):
     station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y)
     db.add(station_model)
     db.commit()
-    # db.refresh(station_model)
     return station
 
 @app.put("/{station_id}")
