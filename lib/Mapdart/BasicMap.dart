@@ -3,7 +3,24 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'location_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+class Station{
+    String name;
+    String address;
+    LatLng location;
+    int bikes;
+    Station({required this.name, required this.address, required this.location, required this.bikes});
+    factory Station.fromJson(Map<String, dynamic> json){
+        return Station(
+            name: json['name'],
+            address: json['address'],
+            location: LatLng(json['x'], json['y']),
+            bikes: json['bikes']
+        );
+    }
+}
 
 class BasicMap extends StatefulWidget {
   const BasicMap({super.key});
@@ -22,13 +39,46 @@ class _BasicMapState extends State<BasicMap> {
     final MapController mapController = MapController();
     Marker? _marker, _marker2;
     bool isProgramMoved = false;
-    final List<LatLng> latLngArray = [
-        LatLng(43.59275, -79.64114), LatLng(44.59275, -79.64114), LatLng(44.69275, -79.64114), LatLng(43.59275, -79.74114)
-    ];
-    
+    List<Station> stations = [];
+    List<Marker> locMarker = [];
+    void fetchStation() async {
+        var response;
+        var url = Uri.http('127.0.0.1:5000', 'stations');
+        
+        try{
+            response = await http.get(url);
+        }
+        catch(e){
+            print("Error123");
+            print(e);
+            return;
+        }
+        print(response.body);
+        if (response.statusCode == 200){
+            stations = (json.decode(response.body) as List).map((data) => Station.fromJson(data)).toList();
+            List<Marker> tempLocMarker = List<Marker>.generate(
+                stations.length,
+                (index) => Marker(
+                    point: stations[index].location,
+                    child: GestureDetector(onTap: () => _showBottomSheet(index), child: StationLogo) // Replace 'markerClicked' with the actual widget you want to use as a marker
+                ),
+            );
+            setState(() {
+               locMarker = tempLocMarker;
+            });
+        }
+        else{
+            
+        }
+
+    }
+
     void _showBottomSheet(int index) {
-        double sidex = latLngArray[index].latitude;
-        double sidey = latLngArray[index].longitude;
+        double sidex = stations[index].location.latitude;
+        double sidey = stations[index].location.longitude;
+        String name = stations[index].name;
+        String addrs = stations[index].address;
+        int bikes = stations[index].bikes;
         showModalBottomSheet(
             context: context,
             builder: (context) {
@@ -43,14 +93,26 @@ class _BasicMapState extends State<BasicMap> {
                             Image.asset(
                                 'assests/images/placeHolderBike.jpeg', // Replace with your image asset
                                 width: MediaQuery.of(context).size.width, // Set image width to full screen width
-                                height: 150, // Adjust the size accordingly
+                                height: MediaQuery.of(context).size.height * 0.3, // Adjust the size accordingly
                                 fit: BoxFit.cover, // Cover the entire width while keeping aspect ratio
                             ),
-                            SizedBox(height: 16), // Spacing between image and text
+                            SizedBox(height: 16),
+                            
                             Text(
-                                'This is some description about the station (remaining bike, etc). $sidey, $sidex',
+                                '$name',
+                                style: TextStyle(fontSize: 30), // Adjust the style as needed
+                            ),
+                            Text(
+                                '$addrs',
                                 style: TextStyle(fontSize: 16), // Adjust the style as needed
                             ),
+
+                            Text(
+                                'Remaining Bike: $bikes/10',
+                                style: TextStyle(fontSize: 16), // Adjust the style as needed
+                            ),
+
+                            SizedBox(height: 16),
                             Align(
                             	alignment: Alignment.centerLeft, // Aligning only this widget to the left
                             	child: Row(
@@ -78,29 +140,6 @@ class _BasicMapState extends State<BasicMap> {
                                     			child: Icon(Icons.directions),
                                 		    ),
                                 		),
-                                        Container(
-                                		    width: 80, // Diameter of the circle
-                                		    height: 80, // Diameter of the circle
-                                		    margin: EdgeInsets.only(right: 8), // Spacing between buttons
-                                		    decoration: BoxDecoration(
-                                    			color: Colors.blue, // Color of the circle
-                                    			shape: BoxShape.circle,
-                                		    ),
-                                		    child: ElevatedButton(
-                                    			onPressed: () {
-                                    			    // Action when the button is pressed
-                                                    Uri _url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey');
-                                                    launchUrl(_url);
-                                    			    
-                                    			},
-                                    			style: ElevatedButton.styleFrom(
-                                    			    shape: CircleBorder(),
-                                    			    primary: Colors.blue, // Background color of the button
-                                    			),
-                                    			child: Icon(Icons.directions),
-                                		    ),
-                                		)
-
                                     ],
                             	),
                         	)
@@ -143,7 +182,7 @@ class _BasicMapState extends State<BasicMap> {
               _marker = Marker(point: newLocation, child: LocationLogo);
             });
         };
-
+        fetchStation();
         _locationService.startPositionUpdates();
     }
 
@@ -211,13 +250,7 @@ class _BasicMapState extends State<BasicMap> {
                 ),
                 MarkerLayer(markers: [_marker!]),
                 MarkerLayer(
-                    markers: List<Marker>.generate(
-                        latLngArray.length,
-                        (index) => Marker(
-                            point: latLngArray[index],
-                            child: GestureDetector(onTap: () => _showBottomSheet(index), child: StationLogo) // Replace 'markerClicked' with the actual widget you want to use as a marker
-                        ),
-                    ),
+                    markers: locMarker
                 )
             ],
             
