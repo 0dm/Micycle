@@ -32,6 +32,13 @@ def read_api(db: Session = Depends(get_db)):
     """
     return db.query(models.Stations).all()
 
+app.get("/{station_id}")
+def get_station(station_id:int,db: Session = Depends(get_db)):
+    """
+    A function to get a station with a database session as a parameter and return the station with the given ID.
+    """
+    return db.query(models.Stations).filter(models.Stations.id == station_id).first()
+
 @app.post("/")
 def create_station(station: Station, db: Session = Depends(get_db)):
     """
