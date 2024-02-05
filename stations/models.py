@@ -8,3 +8,4 @@ class Stations(Base):
     address = Column(String)
     x = Column(Float)
     y= Column(Float)
+    num_bike = Column(Integer)
