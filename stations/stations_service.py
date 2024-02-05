@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
         print(f"Found {num_stations} stations in the database. Skipping population.")
         yield()
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan,root_path="/stations")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -59,7 +59,7 @@ class Station(BaseModel):
     y: float
     bikes: int
 
-@app.get("/")
+@app.get("/stations")
 def read_api(db: Session = Depends(get_db)):
     """
     A function to read the API with a database session as a parameter and return all stations.
