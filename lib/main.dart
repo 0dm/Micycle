@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const App());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class App extends StatelessWidget {
+  const App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: const Home(),
     );
   }
 }
@@ -24,17 +24,17 @@ class Home extends StatefulWidget {
   const Home({super.key});
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomeState createState() => _HomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    MapPage(),
-    QRScannerPage(),
-    BikePage(),
-    InfoPage(),
+    const MapPage(),
+    const QRScannerPage(),
+    const BikePage(),
+    const InfoPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -79,6 +79,8 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class MapPage extends StatelessWidget {
+  const MapPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const GoogleMap(
@@ -91,6 +93,8 @@ class MapPage extends StatelessWidget {
 }
 
 class QRScannerPage extends StatelessWidget {
+  const QRScannerPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('QR Scanner Page'));
@@ -98,6 +102,8 @@ class QRScannerPage extends StatelessWidget {
 }
 
 class BikePage extends StatelessWidget {
+  const BikePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('Bike Page'));
@@ -105,6 +111,8 @@ class BikePage extends StatelessWidget {
 }
 
 class InfoPage extends StatelessWidget {
+  const InfoPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('Info Page'));
