@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:loginpage/home.dart';
 
 import 'create_account_page.dart'; // Make sure this import is correct
 import 'loading.dart';
@@ -17,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> login() async {
+
     var url = 'http://127.0.0.1:5000/login'; // Update to your actual server address
     var response = await http.post(
       Uri.parse(url),
@@ -26,12 +28,11 @@ class _LoginPageState extends State<LoginPage> {
         'password': _passwordController.text,
       }),
     );
-
     if (response.statusCode == 200) {
           // Login successful, navigate to LoadingPage
-      Navigator.pushReplacement(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoadingPage()),
+      MaterialPageRoute(builder: (context) => MyHomePage()),
     );
     } else {
       showDialog(
@@ -93,7 +94,10 @@ class _LoginPageState extends State<LoginPage> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      login();
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MyHomePage()),
+                      );
                     }
                   },
                   child: Text('Login'),
