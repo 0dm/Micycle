@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_maps_flutter: ^2.0.10
   flutter_map: ^6.0.0
   latlong2: ^0.9.0
   http: ^1.0.0

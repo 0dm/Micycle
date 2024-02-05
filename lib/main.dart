@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'Mapdart/BasicMap.dart';
+
 void main() {
   runApp(const App());
 }
@@ -29,7 +30,6 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
-
 
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
@@ -79,19 +79,19 @@ class _HomeState extends State<Home> {
   }
 }
 
-class MapPage extends StatelessWidget {
-  const MapPage({super.key});
+// class MapPage extends StatelessWidget {
+//   const MapPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: LatLng(43.548729, -79.664291),
-        zoom: 12,
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return const GoogleMap(
+//       initialCameraPosition: CameraPosition(
+//         target: LatLng(43.548729, -79.664291),
+//         zoom: 12,
+//       ),
+//     );
+//   }
+// }
 
 class QRScannerPage extends StatelessWidget {
   const QRScannerPage({super.key});
