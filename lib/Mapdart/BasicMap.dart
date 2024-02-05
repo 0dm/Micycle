@@ -121,7 +121,7 @@ class _BasicMapState extends State<BasicMap> {
     List<Marker> locMarker = [];
     void fetchStation() async {
         var response;
-        var url = Uri.http('127.0.0.1:5000', 'stations');
+        var url = Uri.http('127.0.0.1:8000', 'stations');
         
         try{
             response = await http.get(url);
