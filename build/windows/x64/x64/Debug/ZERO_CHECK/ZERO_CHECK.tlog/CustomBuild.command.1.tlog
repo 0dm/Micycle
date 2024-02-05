@@ -1,0 +1,10 @@
+^C:\USERS\VICTO\PERSONAL PROJECTS\MICYCLE\BUILD\WINDOWS\X64\CMAKEFILES\26332396B665FBFC4747FE5CC9F1DF64\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" "-SC:/Users/victo/Personal Projects/MiCycle/windows" "-BC:/Users/victo/Personal Projects/MiCycle/build/windows/x64" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/victo/Personal Projects/MiCycle/build/windows/x64/micycle.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
