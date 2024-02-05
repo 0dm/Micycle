@@ -22,8 +22,86 @@ class Station{
     }
 }
 
+
+class BottomSheet extends StatelessWidget{
+    final double sidex;
+    final double sidey;
+    final String name;
+    final String addrs;
+    final int bikes;
+    BottomSheet({required this.sidex, required this.sidey, required this.name, required this.addrs, required this.bikes});
+
+    @override
+    Widget build(BuildContext context) {
+        return Container(
+            constraints: BoxConstraints.expand(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.75
+            ),
+            padding: EdgeInsets.all(16),
+            child: Column(
+                children: <Widget>[
+                    Image.asset(
+                        'assests/images/placeHolderBike.jpeg', // Replace with your image asset
+                        width: MediaQuery.of(context).size.width, // Set image width to full screen width
+                        height: MediaQuery.of(context).size.height * 0.3, // Adjust the size accordingly
+                        fit: BoxFit.cover, // Cover the entire width while keeping aspect ratio
+                    ),
+                    SizedBox(height: 16),
+                    
+                    Text(
+                        '$name',
+                        style: TextStyle(fontSize: 30), // Adjust the style as needed
+                    ),
+                    Text(
+                        '$addrs',
+                        style: TextStyle(fontSize: 16), // Adjust the style as needed
+                    ),
+
+                    Text(
+                        'Remaining Bike: $bikes/10',
+                        style: TextStyle(fontSize: 16), // Adjust the style as needed
+                    ),
+
+                    SizedBox(height: 16),
+                    Align(
+                    	alignment: Alignment.centerLeft, // Aligning only this widget to the left
+                    	child: Row(
+                    	    mainAxisSize: MainAxisSize.min, // To prevent the Row from occupying the entire horizontal space
+                    	    children: [ 
+                        		Container(
+                        		    width: 80, // Diameter of the circle
+                        		    height: 80, // Diameter of the circle
+                        		    margin: EdgeInsets.only(right: 8), // Spacing between buttons
+                        		    decoration: BoxDecoration(
+                            			color: Colors.blue, // Color of the circle
+                            			shape: BoxShape.circle,
+                        		    ),
+                        		    child: ElevatedButton(
+                            			onPressed: () {
+                            			    // Action when the button is pressed
+                                            Uri _url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey');
+                                            launchUrl(_url);
+                            			    
+                            			},
+                            			style: ElevatedButton.styleFrom(
+                            			    shape: CircleBorder(),
+                            			    primary: Colors.blue, // Background color of the button
+                            			),
+                            			child: Icon(Icons.directions),
+                        		    ),
+                        		),
+                            ],
+                    	),
+                	)
+                ],
+            ),
+        );
+    }
+}
+
 class BasicMap extends StatefulWidget {
-  const BasicMap({super.key});
+    const BasicMap({super.key});
 
     @override
     _BasicMapState createState() => _BasicMapState();
@@ -37,7 +115,7 @@ class _BasicMapState extends State<BasicMap> {
     Icon locationActive = Icon(Icons.location_on);
     final LocationService _locationService = LocationService();
     final MapController mapController = MapController();
-    Marker? _marker, _marker2;
+    Marker? _marker;
     bool isProgramMoved = false;
     List<Station> stations = [];
     List<Marker> locMarker = [];
@@ -81,71 +159,8 @@ class _BasicMapState extends State<BasicMap> {
         int bikes = stations[index].bikes;
         showModalBottomSheet(
             context: context,
-            builder: (context) {
-                return Container(
-                    constraints: BoxConstraints.expand(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.75
-                    ),
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                        children: <Widget>[
-                            Image.asset(
-                                'assests/images/placeHolderBike.jpeg', // Replace with your image asset
-                                width: MediaQuery.of(context).size.width, // Set image width to full screen width
-                                height: MediaQuery.of(context).size.height * 0.3, // Adjust the size accordingly
-                                fit: BoxFit.cover, // Cover the entire width while keeping aspect ratio
-                            ),
-                            SizedBox(height: 16),
-                            
-                            Text(
-                                '$name',
-                                style: TextStyle(fontSize: 30), // Adjust the style as needed
-                            ),
-                            Text(
-                                '$addrs',
-                                style: TextStyle(fontSize: 16), // Adjust the style as needed
-                            ),
-
-                            Text(
-                                'Remaining Bike: $bikes/10',
-                                style: TextStyle(fontSize: 16), // Adjust the style as needed
-                            ),
-
-                            SizedBox(height: 16),
-                            Align(
-                            	alignment: Alignment.centerLeft, // Aligning only this widget to the left
-                            	child: Row(
-                            	    mainAxisSize: MainAxisSize.min, // To prevent the Row from occupying the entire horizontal space
-                            	    children: [ 
-                                		Container(
-                                		    width: 80, // Diameter of the circle
-                                		    height: 80, // Diameter of the circle
-                                		    margin: EdgeInsets.only(right: 8), // Spacing between buttons
-                                		    decoration: BoxDecoration(
-                                    			color: Colors.blue, // Color of the circle
-                                    			shape: BoxShape.circle,
-                                		    ),
-                                		    child: ElevatedButton(
-                                    			onPressed: () {
-                                    			    // Action when the button is pressed
-                                                    Uri _url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey');
-                                                    launchUrl(_url);
-                                    			    
-                                    			},
-                                    			style: ElevatedButton.styleFrom(
-                                    			    shape: CircleBorder(),
-                                    			    primary: Colors.blue, // Background color of the button
-                                    			),
-                                    			child: Icon(Icons.directions),
-                                		    ),
-                                		),
-                                    ],
-                            	),
-                        	)
-                        ],
-                    ),
-                );
+            builder: (context) { 
+                return BottomSheet(sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes);
             },
             isScrollControlled: true, // Set to true so the BottomSheet can take full screen height if needed
         );
