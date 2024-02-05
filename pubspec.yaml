@@ -1,5 +1,5 @@
-name: micycle
-description: "A new Flutter project."
+name: MiCycle
+description: "bike"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -30,15 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_map: ^6.0.0
-  latlong2: ^0.9.0
-  http: ^1.0.0
-  url_launcher: ^6.0.0
-  geolocator: ^9.0.1
-  flutter_map_marker_cluster: any  # or the latest version
-  flutter_map_marker_popup: any  # or the latest version
-  sqlalchemy: ^2.0.0
-  fastapi: ^0.9.0
+  google_maps_flutter: ^2.0.10
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -67,8 +60,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  assets:
-    - assests/images/
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
