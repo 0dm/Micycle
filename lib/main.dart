@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const App());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class App extends StatelessWidget {
+  const App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,31 +15,26 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: const Home(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+class Home extends StatefulWidget {
+  const Home({super.key});
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomeState createState() => _HomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: LatLng(37.42796133580664, -122.085749655962),
-        zoom: 14.4746,
-      ),
-    ),
-    Text('QR Scanner Page'),
-    Text('Page 1'),
-    Text('Page 2'),
+  static final List<Widget> _widgetOptions = <Widget>[
+    const MapPage(),
+    const QRScannerPage(),
+    const BikePage(),
+    const InfoPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -54,9 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('MiCycle 🚲'),
       ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -72,15 +65,56 @@ class _MyHomePageState extends State<MyHomePage> {
             label: 'Bike',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.help),
-            label: 'Page 2',
+            icon: Icon(Icons.info),
+            label: 'Info',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        unselectedItemColor: Colors.blue, // Add this line
         onTap: _onItemTapped,
+        unselectedItemColor: Colors.grey,
+        selectedItemColor: Colors.blue,
       ),
     );
+  }
+}
+
+class MapPage extends StatelessWidget {
+  const MapPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const GoogleMap(
+      initialCameraPosition: CameraPosition(
+        target: LatLng(43.548729, -79.664291),
+        zoom: 12,
+      ),
+    );
+  }
+}
+
+class QRScannerPage extends StatelessWidget {
+  const QRScannerPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('QR Scanner Page'));
+  }
+}
+
+class BikePage extends StatelessWidget {
+  const BikePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Bike Page'));
+  }
+}
+
+class InfoPage extends StatelessWidget {
+  const InfoPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Info Page'));
   }
 }
