@@ -42,7 +42,7 @@ class BottomSheet extends StatelessWidget{
             child: Column(
                 children: <Widget>[
                     Image.asset(
-                        'assests/images/placeHolderBike.jpeg', // Replace with your image asset
+                        'assets/images/placeHolderBike.jpeg', // Replace with your image asset
                         width: MediaQuery.of(context).size.width, // Set image width to full screen width
                         height: MediaQuery.of(context).size.height * 0.3, // Adjust the size accordingly
                         fit: BoxFit.cover, // Cover the entire width while keeping aspect ratio
