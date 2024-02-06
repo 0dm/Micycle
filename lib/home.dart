@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'Mapdart/basic_map.dart';
 
 void main() {
   runApp(const App());
@@ -31,7 +32,7 @@ class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    const MapPage(),
+    const BasicMap(),
     const QRScannerPage(),
     const BikePage(),
     const InfoPage(),
