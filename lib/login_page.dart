@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:loginpage/home.dart';
+import 'home.dart';
 
 import 'create_account_page.dart';
 
@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
           // Login successful, navigate to LoadingPage
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => MyHomePage()),
+      MaterialPageRoute(builder: (context) => Home()),
     );
     } else {
       showDialog(
@@ -95,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                     if (_formKey.currentState!.validate()) {
                         Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => MyHomePage()),
+                        MaterialPageRoute(builder: (context) => Home()),
                       );
                     }
                   },
