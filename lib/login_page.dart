@@ -29,10 +29,10 @@ class _LoginPageState extends State<LoginPage> {
     );
     if (response.statusCode == 200) {
           // Login successful, navigate to LoadingPage
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => Home()),
-    );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
     } else {
       showDialog(
         context: context,
@@ -93,10 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                        Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Home()),
-                      );
+                        login();
                     }
                   },
                   child: Text('Login'),
