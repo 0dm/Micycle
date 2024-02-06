@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Navigate to Flask backend directory
-cd 'MiCycle/AccountDatabase'
+cd 'backend'
 echo "Starting Flask backend..."
 FLASK_APP=app.py FLASK_ENV=development flask run &
+
 
 # Save the PID of the Flask process
 FLASK_PID=$!
@@ -12,7 +13,7 @@ FLASK_PID=$!
 sleep 5
 
 # Navigate to Flutter frontend directory
-cd 'MiCycle/MiCycleApp'
+cd '..'
 echo "Starting Flutter frontend..."
 flutter run -d chrome
 
