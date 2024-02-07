@@ -17,7 +17,7 @@ class Station{
             name: json['name'],
             address: json['address'],
             location: LatLng(json['x'], json['y']),
-            bikes: json['bikes']
+            bikes: json['num_bike']
         );
     }
 }
