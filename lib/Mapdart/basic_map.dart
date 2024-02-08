@@ -226,34 +226,45 @@ class _BasicMapState extends State<BasicMap> {
                 initialZoom: 15,
             ),
             children: [
+
                 TileLayer(
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.app',
                 ),
-                Container(
-        		    width: 80, // Diameter of the circle
-        		    height: 80, // Diameter of the circle
-        		    margin: EdgeInsets.only(right: 8), // Spacing between buttons
-        		    decoration: BoxDecoration(
-            			color: Colors.blue, // Color of the circle
-            			shape: BoxShape.circle,
-        		    ),
-        		    child: ElevatedButton(
-            			onPressed: () {
-                            isProgramMoved = true;
-                            ifMoved = false;
-                            mapController.move(curLoc, 15);
-                            setState(() {locationActive = Icon(Icons.location_on);});
-                            isProgramMoved=false;
+                MarkerLayer(markers: [_marker!]),
+                MarkerLayer(
+                    markers: locMarker
+                ),
 
-            			},
-            			style: ElevatedButton.styleFrom(
-            			    shape: CircleBorder(),
-            			    primary: Colors.blue, // Background color of the button
-            			),
-            			child: locationActive
-        		    ),
-        		),
+                Align(
+                    alignment: Alignment.bottomLeft,   
+                    child: Padding(                            
+                        padding: EdgeInsets.all(10.0),
+                        child: Container(
+                            width: 80, // Diameter of the circle
+                            height: 80, // Diameter of the circle
+                            margin: EdgeInsets.only(right: 8), // Spacing between buttons
+                            decoration: BoxDecoration(
+                                color: Colors.blue, // Color of the circle
+                                shape: BoxShape.circle,
+                            ),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                    isProgramMoved = true;
+                                    ifMoved = false;
+                                    mapController.move(curLoc, 15);
+                                    setState(() {locationActive = Icon(Icons.location_on);});
+                                    isProgramMoved=false;
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    shape: CircleBorder(),
+                                    backgroundColor: Colors.blue, // Background color of the button
+                                ),
+                            child: locationActive
+                            )
+                        )
+                    ),
+                ),
 
                 RichAttributionWidget(
                     attributions: [
@@ -263,10 +274,6 @@ class _BasicMapState extends State<BasicMap> {
                         ),
                     ],
                 ),
-                MarkerLayer(markers: [_marker!]),
-                MarkerLayer(
-                    markers: locMarker
-                )
             ],
             
         );
