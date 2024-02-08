@@ -28,5 +28,14 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+  <key>NSAllowsLocalNetworking</key>
+  <true/>
+  <key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs access to location when open.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app needs access to location always.</string>
+</dict>
 </dict>
 </plist>
