@@ -1,3 +1,5 @@
 flutter
 flask
 flask-cors
+fastapi
+flask_sqlalchemy
