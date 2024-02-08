@@ -18,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> login() async {
 
-    var url = 'http://127.0.0.1:5000/login'; // Update to your actual server address
+    var url = 'http://localhost:5000/login'; // Update to your actual server address
     var response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},

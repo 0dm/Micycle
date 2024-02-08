@@ -37,7 +37,7 @@ Future<void> createAccount() async {
     return; // Stop the function from proceeding further
   }
 
-  var url = 'http://127.0.0.1:5000/create_account'; // Adjust to your actual server address
+  var url = 'http://localhost:5000/create_account'; // Adjust to your actual server address
   var response = await http.post(
     Uri.parse(url),
     headers: {"Content-Type": "application/json"},
