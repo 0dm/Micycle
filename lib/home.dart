@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'Mapdart/basic_map.dart';
+import 'qrscanner.dart';
 
 void main() {
   runApp(const App());
@@ -33,7 +34,7 @@ class _HomeState extends State<Home> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
-    const QRScannerPage(),
+    QRScannerPage(),
     const BikePage(),
     const InfoPage(),
   ];
@@ -93,14 +94,7 @@ class MapPage extends StatelessWidget {
   }
 }
 
-class QRScannerPage extends StatelessWidget {
-  const QRScannerPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('QR Scanner Page'));
-  }
-}
 
 class BikePage extends StatelessWidget {
   const BikePage({super.key});
