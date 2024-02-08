@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             // Send POST request
             const qrData = code.data; // Assuming the data is in the form "(int, int)"
             const postData = { qrData: qrData };
-            fetch('http://localhost:5000/post_endpoint', {
+            fetch('http://localhost:5001/post_endpoint', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
