@@ -76,7 +76,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   void _getStationInfo() async {
-    final response = await http.get(Uri.parse('http://127.0.0.1:5000/get_endpoint'));
+    final response = await http.get(Uri.parse('http://127.0.0.1:5001/get_endpoint'));
     if (response.statusCode == 200) {
       final responseData = response.body;
       if (responseData.length > 15) {
