@@ -38,6 +38,8 @@ dependencies:
   geolocator: ^9.0.1
   flutter_map_marker_cluster: any  
   flutter_map_marker_popup: any  
+  flutter_stripe: ^1.0.0+1
+
 
 
   # The following adds the Cupertino Icons font to your application.

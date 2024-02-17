@@ -11,6 +11,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "ap
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
+import stripe  # Ensure Stripe is imported
+stripe.api_key = 'sk_test_51OkvTNGUL4Iok28JJullgn5bJ8PYSEXc2hSXBrEv8bmYgfuOyYWPs3bvG8pdFRMjPwOkEyzCDdG1xUi8eAmhWaHr00m1wTOair'
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -19,6 +21,38 @@ class User(db.Model):
     display_name = db.Column(db.String(120), nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
     admin_code = db.Column(db.String(80), nullable=True)
+    stripe_customer_id = db.Column(db.String(255), nullable=True)
+
+
+
+@app.route("/create_stripe_customer", methods=["POST"])
+def create_stripe_customer():
+    data = request.get_json()
+    user = User.query.filter_by(email=data["email"]).first()
+    if user:
+        try:
+            # Create a new Stripe Customer
+            customer = stripe.Customer.create(
+                email=data["email"],
+                name=data.get("displayName", ""),
+                payment_method=data.get("paymentMethodId"),  # Assume this is passed from the frontend
+                invoice_settings={
+                    'default_payment_method': data.get("paymentMethodId"),
+                },
+            )
+            
+            # Here, you'd save the customer ID to your database
+            user.stripe_customer_id = customer.id  # Assuming you have a stripe_customer_id field in your User model
+            db.session.commit()
+
+            return jsonify({"stripeCustomerId": customer.id}), 201
+            
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+
 
 
 @app.route("/create_account", methods=["POST"])

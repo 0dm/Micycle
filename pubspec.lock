@@ -134,6 +134,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.17"
+  flutter_stripe:
+    dependency: "direct main"
+    description:
+      name: flutter_stripe
+      sha256: "9111f48bd7d78c8bf1ce5de4cd8aa96b3471ad7ce3538166f61e632477cc009f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -144,6 +152,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  freezed_annotation:
+    dependency: transitive
+    description:
+      name: freezed_annotation
+      sha256: "70776c4541e5cacfe45bcaf00fe79137b8c61aa34fb5765a05ce6c57fd72c6e9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.14.3"
   geolocator:
     dependency: "direct main"
     description:
@@ -288,6 +304,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.4"
+  json_annotation:
+    dependency: transitive
+    description:
+      name: json_annotation
+      sha256: b10a7b2ff83d83c777edba3c6a0f97045ddadd56c944e1a23a3fdf43a1bf4467
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.8.1"
   latlong2:
     dependency: "direct main"
     description:
@@ -461,6 +485,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  stripe_android:
+    dependency: transitive
+    description:
+      name: stripe_android
+      sha256: fd4a75dead1bbc62c9c3bdc7ef93028932086d0a452a85a6990d259de2db4fc5
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
+  stripe_ios:
+    dependency: transitive
+    description:
+      name: stripe_ios
+      sha256: cbee6141e0628b777d9998c8af84eb0dc4ee999ad8bba8debc4667bc11c9f277
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
+  stripe_platform_interface:
+    dependency: transitive
+    description:
+      name: stripe_platform_interface
+      sha256: d8b2d32beaa1fc99b15f8f22a462bb3bae8ce2018f2340769108a2dfbd2e1ee4
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   term_glyph:
     dependency: transitive
     description:
