@@ -25,32 +25,32 @@ class User(db.Model):
 
 
 
-@app.route("/create_stripe_customer", methods=["POST"])
-def create_stripe_customer():
-    data = request.get_json()
-    user = User.query.filter_by(email=data["email"]).first()
-    if user:
-        try:
-            # Create a new Stripe Customer
-            customer = stripe.Customer.create(
-                email=data["email"],
-                name=data.get("displayName", ""),
-                payment_method=data.get("paymentMethodId"),  # Assume this is passed from the frontend
-                invoice_settings={
-                    'default_payment_method': data.get("paymentMethodId"),
-                },
-            )
+# @app.route("/create_stripe_customer", methods=["POST"])
+# def create_stripe_customer():
+#     data = request.get_json()
+#     user = User.query.filter_by(email=data["email"]).first()
+#     if user:
+#         try:
+#             # Create a new Stripe Customer
+#             customer = stripe.Customer.create(
+#                 email=data["email"],
+#                 name=data.get("displayName", ""),
+#                 payment_method=data.get("paymentMethodId"),  # Assume this is passed from the frontend
+#                 invoice_settings={
+#                     'default_payment_method': data.get("paymentMethodId"),
+#                 },
+#             )
             
-            # Here, you'd save the customer ID to your database
-            user.stripe_customer_id = customer.id  # Assuming you have a stripe_customer_id field in your User model
-            db.session.commit()
+#             # Here, you'd save the customer ID to your database
+#             user.stripe_customer_id = customer.id  # Assuming you have a stripe_customer_id field in your User model
+#             db.session.commit()
 
-            return jsonify({"stripeCustomerId": customer.id}), 201
+#             return jsonify({"stripeCustomerId": customer.id}), 201
             
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    else:
-        return jsonify({"error": "User not found"}), 404
+#         except Exception as e:
+#             return jsonify({"error": str(e)}), 500
+#     else:
+#         return jsonify({"error": "User not found"}), 404
 
 
 
@@ -60,30 +60,37 @@ def create_account():
     data = request.get_json()
     existing_user = User.query.filter_by(email=data["email"]).first()
     if existing_user:
-        return (
-            jsonify({"error": "This email address already has an account"}),
-            409,
-        )  # 409 Conflict
+        return jsonify({"error": "This email address already has an account"}), 409
 
-    is_admin = data.get("isAdmin", False)
-    admin_code = data.get("adminCode", "")
-
-    if is_admin and admin_code != "admin":
-        return jsonify({"error": "Invalid admin code"}), 400
-
-    new_user = User(
-        email=data["email"],
-        password=data["password"],
-        display_name=data["displayName"],
-        is_admin=data["isAdmin"],
-        admin_code=data.get("adminCode", ""),
-    )
-    db.session.add(new_user)
+    # Create a Stripe Checkout session
     try:
-        db.session.commit()
-        return jsonify({"message": "Account created successfully"}), 201
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': 'Account Creation Fee',
+                    },
+                    'unit_amount': 500,  # Set this to the account creation fee
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=request.host_url + 'success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=request.host_url + 'cancel',
+            metadata={
+                'email': data["email"],
+                'password': data["password"],  # Storing the password directly for this example
+                'display_name': data["displayName"],
+                'is_admin': str(data["isAdmin"]),
+                'admin_code': data.get("admin_code", ""),
+            }
+        )
+        app.logger.info(f"Checkout session created successfully. Session ID: {checkout_session['id']}")
+        return jsonify({'url': checkout_session.url}), 200
     except Exception as e:
-        db.session.rollback()
+        app.logger.error(f"Failed to create account: {e}")  # Log the error
         return jsonify({"error": str(e)}), 500
 
 
@@ -105,6 +112,31 @@ def login():
     else:
         return jsonify({"error": "Invalid email or password"}), 401
 
+@app.route("/success", methods=["GET"])
+def payment_success():
+    session_id = request.args.get('session_id')
+    if session_id:
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+            metadata = session.metadata
+
+            new_user = User(
+                email=metadata["email"],
+                password=metadata["password"],  # Directly using the stored password
+                display_name=metadata["display_name"],
+                is_admin=metadata["is_admin"] == 'True',
+                admin_code=metadata.get("admin_code", ""),
+                stripe_customer_id=session.customer  # Save the Stripe customer ID
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            # Redirect or respond as needed, e.g., to a login page
+            return jsonify({"message": "Account created successfully"}), 201
+        except Exception as e:
+            return jsonify({"error": "Failed to retrieve session information"}), 500
+    else:
+        return jsonify({"error": "Session ID not provided"}), 400
+    
 
 if __name__ == "__main__":
     with app.app_context():
