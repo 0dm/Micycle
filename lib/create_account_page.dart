@@ -73,7 +73,28 @@ Future<void> createAccount() async {
         ],
       ),
     );
-  } else {
+  } if (response.statusCode == 201) {
+  // Account created successfully
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text('Success'),
+      content: Text('Account created successfully, please log in.'),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            // This assumes you have a named route set up for your login page
+            // Replace '/loginPage' with the actual route name for your login page
+            Navigator.of(ctx).pop(); // Close the dialog
+            Navigator.of(context).pushReplacementNamed('/login');
+            },
+          child: Text('Login'),
+          ),
+        ],
+      ),
+    );
+  }
+  else {
     // Handle other errors
     showDialog(
       context: context,
