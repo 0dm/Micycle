@@ -4,6 +4,7 @@ import 'package:flutter_stripe/flutter_stripe.dart'; // Import flutter_stripe
 
 import 'login_page.dart';
 
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   if (!kIsWeb) {

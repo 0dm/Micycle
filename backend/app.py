@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  # Import CORS
 import hashlib
 import os
+from flask import redirect;
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -25,33 +26,33 @@ class User(db.Model):
 
 
 
-# @app.route("/create_stripe_customer", methods=["POST"])
-# def create_stripe_customer():
-#     data = request.get_json()
-#     user = User.query.filter_by(email=data["email"]).first()
-#     if user:
-#         try:
-#             # Create a new Stripe Customer
-#             customer = stripe.Customer.create(
-#                 email=data["email"],
-#                 name=data.get("displayName", ""),
-#                 payment_method=data.get("paymentMethodId"),  # Assume this is passed from the frontend
-#                 invoice_settings={
-#                     'default_payment_method': data.get("paymentMethodId"),
-#                 },
-#             )
+@app.route("/create_stripe_customer", methods=["POST"])
+def create_stripe_customer():
+    data = request.get_json()
+    user = User.query.filter_by(email=data["email"]).first()
+    if user and user.stripe_customer_id is None:  # Check if the user exists and doesn't already have a Stripe customer ID
+        try:
+            # Create a new Stripe Customer
+            customer = stripe.Customer.create(
+                email=data["email"],
+                name=data.get("displayName", "")
+                # You can add more fields as needed
+            )
             
-#             # Here, you'd save the customer ID to your database
-#             user.stripe_customer_id = customer.id  # Assuming you have a stripe_customer_id field in your User model
-#             db.session.commit()
+            # Save the customer ID to your database
+            user.stripe_customer_id = customer.id
+            db.session.commit()
 
-#             return jsonify({"stripeCustomerId": customer.id}), 201
-            
-#         except Exception as e:
-#             return jsonify({"error": str(e)}), 500
-#     else:
-#         return jsonify({"error": "User not found"}), 404
-
+            return jsonify({"stripeCustomerId": customer.id}), 201
+        
+        except stripe.error.StripeError as e:
+            # Handle Stripe errors (e.g., network issues)
+            return jsonify({"error": str(e)}), 500
+        except Exception as e:
+            # Handle other unexpected errors
+            return jsonify({"error": "An error occurred"}), 500
+    else:
+        return jsonify({"error": "User already has a Stripe customer ID or does not exist"}), 409
 
 
 
@@ -65,14 +66,15 @@ def create_account():
     # Create a Stripe Checkout session
     try:
         checkout_session = stripe.checkout.Session.create(
+            customer_email=data["email"],  # Add this line
             payment_method_types=['card'],
             line_items=[{
                 'price_data': {
-                    'currency': 'usd',
+                    'currency': 'cad',
                     'product_data': {
                         'name': 'Account Creation Fee',
                     },
-                    'unit_amount': 500,  # Set this to the account creation fee
+                    'unit_amount': 100,  # Set this to the account creation fee
                 },
                 'quantity': 1,
             }],
@@ -120,9 +122,13 @@ def payment_success():
             session = stripe.checkout.Session.retrieve(session_id)
             metadata = session.metadata
 
+            # Log to see if we have the session and customer ID
+            app.logger.info(f"Session retrieved: {session}")
+            app.logger.info(f"Stripe customer ID: {session.customer}")
+
             new_user = User(
                 email=metadata["email"],
-                password=metadata["password"],  # Directly using the stored password
+                password=metadata["password"],  # This should be hashed as previously discussed
                 display_name=metadata["display_name"],
                 is_admin=metadata["is_admin"] == 'True',
                 admin_code=metadata.get("admin_code", ""),
@@ -130,13 +136,17 @@ def payment_success():
             )
             db.session.add(new_user)
             db.session.commit()
+
+            app.logger.info(f"New user created with ID: {new_user.id} and Stripe ID: {new_user.stripe_customer_id}")
+
             # Redirect or respond as needed, e.g., to a login page
-            return jsonify({"message": "Account created successfully"}), 201
+            return redirect('http://localhost:8080/#/login', code=302)
         except Exception as e:
+            app.logger.error(f"Failed to retrieve session information: {e}")
             return jsonify({"error": "Failed to retrieve session information"}), 500
     else:
         return jsonify({"error": "Session ID not provided"}), 400
-    
+
 
 if __name__ == "__main__":
     with app.app_context():
