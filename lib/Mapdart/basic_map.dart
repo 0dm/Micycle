@@ -29,7 +29,8 @@ class BottomSheet extends StatelessWidget{
     final String name;
     final String addrs;
     final int bikes;
-    BottomSheet({required this.sidex, required this.sidey, required this.name, required this.addrs, required this.bikes});
+    final int predictedBikes;
+    BottomSheet({required this.sidex, required this.sidey, required this.name, required this.addrs, required this.bikes,required this.predictedBikes});
 
     @override
     Widget build(BuildContext context) {
@@ -62,7 +63,10 @@ class BottomSheet extends StatelessWidget{
                         'Remaining Bike: $bikes/10',
                         style: TextStyle(fontSize: 16), // Adjust the style as needed
                     ),
-
+                    Text(
+                        'Predicted Bikes Available: $predictedBikes',
+                        style: TextStyle(fontSize: 16), // Adjust the style as needed
+                    ),
                     SizedBox(height: 16),
                     Align(
                     	alignment: Alignment.centerLeft, // Aligning only this widget to the left
@@ -157,10 +161,11 @@ class _BasicMapState extends State<BasicMap> {
         String name = stations[index].name;
         String addrs = stations[index].address;
         int bikes = stations[index].bikes;
+        int predictedBikes = stations[index].bikes - 1;
         showModalBottomSheet(
             context: context,
             builder: (context) { 
-                return BottomSheet(sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes);
+                return BottomSheet(sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes, predictedBikes: predictedBikes);
             },
             isScrollControlled: true, // Set to true so the BottomSheet can take full screen height if needed
         );
