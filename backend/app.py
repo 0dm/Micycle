@@ -63,37 +63,35 @@ def create_account():
     if existing_user:
         return jsonify({"error": "This email address already has an account"}), 409
 
-    # Create a Stripe Checkout session
-    try:
-        checkout_session = stripe.checkout.Session.create(
-            customer_email=data["email"],  # Add this line
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {
-                    'currency': 'cad',
-                    'product_data': {
-                        'name': 'Account Creation Fee',
-                    },
-                    'unit_amount': 100,  # Set this to the account creation fee
-                },
-                'quantity': 1,
-            }],
-            mode='payment',
-            success_url=request.host_url + 'success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.host_url + 'cancel',
-            metadata={
-                'email': data["email"],
-                'password': data["password"],  # Storing the password directly for this example
-                'display_name': data["displayName"],
-                'is_admin': str(data["isAdmin"]),
-                'admin_code': data.get("admin_code", ""),
-            }
-        )
-        app.logger.info(f"Checkout session created successfully. Session ID: {checkout_session['id']}")
-        return jsonify({'url': checkout_session.url}), 200
-    except Exception as e:
-        app.logger.error(f"Failed to create account: {e}")  # Log the error
-        return jsonify({"error": str(e)}), 500
+    # Create a Stripe Customer if one doesn't exist
+    customer = stripe.Customer.create(
+        email=data["email"],
+        name=data.get("displayName", ""),
+    )
+
+    # Create a new user in your database with the Stripe customer ID
+    new_user = User(
+        email=data["email"],
+        password=data["password"],  # Hash this password before storing
+        display_name=data["displayName"],
+        is_admin=data["isAdmin"],
+        admin_code=data.get("admin_code", ""),
+        stripe_customer_id=customer.id  # Save the Stripe customer ID
+    )
+    db.session.add(new_user)
+    db.session.commit()
+
+    # Create a Stripe Checkout Session for payment
+    checkout_session = stripe.checkout.Session.create(
+        customer=customer.id,
+        payment_method_types=['card'],
+        mode='setup',
+        success_url=request.host_url + 'success?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url=request.host_url + 'cancel',
+    )
+
+    return jsonify({'url': checkout_session.url}), 200
+
 
 
 # Flask login route example without password hashing
@@ -117,35 +115,56 @@ def login():
 @app.route("/success", methods=["GET"])
 def payment_success():
     session_id = request.args.get('session_id')
-    if session_id:
-        try:
-            session = stripe.checkout.Session.retrieve(session_id)
-            metadata = session.metadata
-
-            # Log to see if we have the session and customer ID
-            app.logger.info(f"Session retrieved: {session}")
-            app.logger.info(f"Stripe customer ID: {session.customer}")
-
-            new_user = User(
-                email=metadata["email"],
-                password=metadata["password"],  # This should be hashed as previously discussed
-                display_name=metadata["display_name"],
-                is_admin=metadata["is_admin"] == 'True',
-                admin_code=metadata.get("admin_code", ""),
-                stripe_customer_id=session.customer  # Save the Stripe customer ID
-            )
-            db.session.add(new_user)
-            db.session.commit()
-
-            app.logger.info(f"New user created with ID: {new_user.id} and Stripe ID: {new_user.stripe_customer_id}")
-
-            # Redirect or respond as needed, e.g., to a login page
-            return redirect('http://localhost:8080/#/login', code=302)
-        except Exception as e:
-            app.logger.error(f"Failed to retrieve session information: {e}")
-            return jsonify({"error": "Failed to retrieve session information"}), 500
-    else:
+    if not session_id:
         return jsonify({"error": "Session ID not provided"}), 400
+
+    try:
+        # Retrieve the session
+        session = stripe.checkout.Session.retrieve(session_id)
+
+        # Retrieve the customer and set the default payment method
+        customer = stripe.Customer.retrieve(session.customer)
+        payment_method = stripe.PaymentMethod.list(customer=customer.id, type="card").data[0]
+        stripe.Customer.modify(
+            customer.id,
+            invoice_settings={'default_payment_method': payment_method.id},
+        )
+
+        # Redirect to the login page or another success page
+        return redirect('http://localhost:8080/#/login', code=302)
+    except Exception as e:
+        app.logger.error(f"Error processing payment success: {e}")
+        return jsonify({"error": "Failed to process payment success"}), 500
+
+
+@app.route('/charge_user', methods=['POST'])
+def charge_user():
+    data = request.get_json()
+    email = data.get('email')  # Make sure to send 'email' in your request body
+    amount = data.get('amount')  # Amount in cents
+
+    # Search for a Stripe customer by email
+    customers = stripe.Customer.list(email=email).data
+    print(customers)
+
+    # If no customer with that email was found, return an error
+    if not customers:
+        return jsonify({"error": "Stripe customer not found"}), 404
+
+    # Assuming the first customer returned is the one we want
+    customer = customers[0]
+
+    try:
+        # Create a charge for the customer
+        charge = stripe.Charge.create(
+            amount=amount,
+            currency="cad",  # Change to your currency if necessary
+            customer=customer.id,  # Use the Stripe customer ID
+            description="Charge for in-app purchase"
+        )
+        return jsonify({"success": True, "charge_id": charge.id}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
