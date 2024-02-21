@@ -1,29 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'Mapdart/basic_map.dart';
+import 'chat.dart';
 
 void main() {
   runApp(const App());
 }
 
 class App extends StatelessWidget {
+  
   const App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MiCycle',
+      title: 'Micycle',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const Home(),
+      home: Home(),
     );
   }
 }
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  static var displayName;
 
+  const Home({Key? key}) : super(key: key);
   @override
   _HomeState createState() => _HomeState();
 }
@@ -35,7 +38,7 @@ class _HomeState extends State<Home> {
     const BasicMap(),
     const QRScannerPage(),
     const BikePage(),
-    const InfoPage(),
+    Chat(),
   ];
 
   void _onItemTapped(int index) {
@@ -47,10 +50,10 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('MiCycle 🚲'),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _widgetOptions,
       ),
-      body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -66,8 +69,8 @@ class _HomeState extends State<Home> {
             label: 'Bike',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: 'Info',
+            icon: Icon(Icons.chat_bubble),
+            label: 'Chat',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -108,14 +111,5 @@ class BikePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('Bike Page'));
-  }
-}
-
-class InfoPage extends StatelessWidget {
-  const InfoPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Info Page'));
   }
 }
