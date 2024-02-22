@@ -25,7 +25,8 @@ class App extends StatelessWidget {
 
 class Home extends StatefulWidget {
   static var displayName;
-
+  static var email;
+  static var isAdmin;
   const Home({Key? key}) : super(key: key);
   @override
   _HomeState createState() => _HomeState();

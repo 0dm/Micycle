@@ -72,11 +72,15 @@ def login():
         return jsonify({"error": "Invalid email or password"}), 401
 
 
-@app.route("/get_display_name/<email>", methods=["GET"])
-def get_display_name(email):
+@app.route("/get_user_info/<email>", methods=["GET"])
+def get_user_info(email):
     user = User.query.filter_by(email=email).first()
     if user:
-        return jsonify({"display_name": user.display_name}), 200
+        return jsonify({
+            "display_name": user.display_name,
+            "is_admin": user.is_admin,
+            "email": user.email
+        }), 200
     else:
         return jsonify({"error": "User not found"}), 404
 

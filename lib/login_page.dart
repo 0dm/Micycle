@@ -16,14 +16,19 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future getDisplayName(String email) async {
+  Future getCredentialsName(String email) async {
     return http
         .get(
-      Uri.parse('http://localhost:5000/get_display_name/$email'),
+      Uri.parse('http://localhost:5000/get_user_info/$email'),
     )
         .then((response) {
       if (response.statusCode == 200) {
-        return json.decode(response.body)['display_name'];
+        Map<String, dynamic> data = json.decode(response.body);
+        return {
+          'display_name': data['display_name'],
+          'is_admin': data['is_admin'],
+          'email': data['email']
+        };
       } else {
         return null;
       }
@@ -43,11 +48,14 @@ class _LoginPageState extends State<LoginPage> {
     );
     if (response.statusCode == 200) {
       // Store the user's display name
-      var displayName = await getDisplayName(_emailController.text);
-      if (displayName != null) {
+      var displayCredentials = await getCredentialsName(_emailController.text);
+      
+      if (displayCredentials != null) {
         // Store the user's display name in the app's state
         setState(() {
-          Home.displayName = displayName;
+          Home.displayName = displayCredentials['displayName'];
+          Home.email = displayCredentials['email'];
+          Home.isAdmin = displayCredentials['is_admin'];
         });
       }
       // Login successful, navigate to LoadingPage
