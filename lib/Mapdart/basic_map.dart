@@ -86,7 +86,7 @@ class BottomSheet extends StatelessWidget{
                             			},
                             			style: ElevatedButton.styleFrom(
                             			    shape: CircleBorder(),
-                            			    primary: Colors.blue, // Background color of the button
+                            			    backgroundColor: Colors.blue, // Background color of the button
                             			),
                             			child: Icon(Icons.directions),
                         		    ),
@@ -100,7 +100,7 @@ class BottomSheet extends StatelessWidget{
     }
 }
 
-class BasicMap extends StatefulWidget {
+class BasicMap extends StatefulWidget {b
     const BasicMap({super.key});
 
     @override
@@ -127,7 +127,6 @@ class _BasicMapState extends State<BasicMap> {
             response = await http.get(url);
         }
         catch(e){
-            print("Error123");
             print(e);
             return;
         }
@@ -265,7 +264,33 @@ class _BasicMapState extends State<BasicMap> {
                         )
                     ),
                 ),
+                Align(
+                    alignment: Alignment.topLeft,   
+                    child: Padding(                            
+                        padding: EdgeInsets.all(10.0),
+                        child: Container(
+                            width: 80, // Diameter of the circle
+                            height: 80, // Diameter of the circle
+                            margin: EdgeInsets.only(right: 8), // Spacing between buttons
+                            decoration: BoxDecoration(
+                                color: Colors.blue, // Color of the circle
+                                shape: BoxShape.circle,
+                            ),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                    fetchStation();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    shape: CircleBorder(),
+                                    backgroundColor: Colors.blue, // Background color of the button
+                                ),
+                            child: Icon(Icons.refresh)
+                            )
+                        )
+                    ),
+                ),
 
+                
                 RichAttributionWidget(
                     attributions: [
                         TextSourceAttribution(
