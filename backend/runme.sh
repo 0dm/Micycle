@@ -13,7 +13,7 @@ start_services() {
 
 stop_service() {
     # Find the PID of the process using port 5000
-    PID=$(lsof -t -i :5000)
+    PID=$(lsof -t -i :5001)
 
     
     if [ -n "$PID" ]; then
