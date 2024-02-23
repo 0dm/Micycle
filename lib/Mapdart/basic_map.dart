@@ -24,6 +24,15 @@ class Station {
         location: LatLng(json['x'], json['y']),
         bikes: json['num_bike']);
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'address': address,
+      'x': location.latitude,
+      'y': location.longitude,
+      'num_bike': bikes,
+    };
+  }
 }
 
 class BottomSheet extends StatelessWidget {
@@ -359,7 +368,7 @@ class _BasicMapState extends State<BasicMap> {
           ),
           TextButton(
             child: Text('Add'),
-            onPressed: () {
+            onPressed: () async {
               var newStation = Station(
                 name: nameController.text,
                 address: addressController.text,
@@ -369,6 +378,39 @@ class _BasicMapState extends State<BasicMap> {
                 ),
                 bikes: int.parse(bikesController.text),
               );
+              
+              // Send POST request to add the new station
+              final Uri apiUrl = Uri.parse('http://localhost:8000/stations');
+              try {
+                final response = await http.post(
+                  apiUrl,
+                  headers: <String, String>{
+                    'Content-Type': 'application/json; charset=UTF-8',
+                  },
+                  body: jsonEncode(newStation.toJson()),
+                );
+
+                if (response.statusCode == 200) {
+                  print('Station added successfully');
+                  // Add the station to the local list and map markers if needed
+                  setState(() {
+                    stations.add(newStation);
+                    locMarker.add(
+                      Marker(
+                        point: newStation.location,
+                        child: GestureDetector(
+                          onTap: () => _showBottomSheet(stations.length - 1),
+                          child: StationLogo,
+                        ),
+                      ),
+                    );
+                  });
+                } else {
+                  print('Failed to add station. Error: ${response.statusCode}');
+                }
+              } catch (error) {
+                print('Failed to add station. Error: $error');
+              }
 
               setState(() {
                 stations.add(newStation);
