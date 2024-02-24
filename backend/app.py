@@ -77,6 +77,7 @@ def get_user_info(email):
     user = User.query.filter_by(email=email).first()
     if user:
         return jsonify({
+            "id": user.id,
             "display_name": user.display_name,
             "is_admin": user.is_admin,
             "email": user.email
