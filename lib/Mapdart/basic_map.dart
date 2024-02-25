@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'location_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 
 class Station{
     String name;
@@ -100,7 +101,7 @@ class BottomSheet extends StatelessWidget{
     }
 }
 
-class BasicMap extends StatefulWidget {b
+class BasicMap extends StatefulWidget {
     const BasicMap({super.key});
 
     @override
@@ -119,7 +120,17 @@ class _BasicMapState extends State<BasicMap> {
     bool isProgramMoved = false;
     List<Station> stations = [];
     List<Marker> locMarker = [];
+    bool _canFetchStation = true;
+
     void fetchStation() async {
+        if (_canFetchStation == false){
+            return;
+        }
+        _canFetchStation = false;
+        Timer(Duration(seconds: 10), () {
+            _canFetchStation = true;
+        });
+
         var response;
         var url = Uri.http('localhost:8000', 'stations');
         
