@@ -144,21 +144,16 @@ def delete_station(station_id:int, db: Session = Depends(get_db)):
     db.query(models.Stations).filter(models.Stations.id == station_id).delete()
     db.commit()
 
-@app.post("/qr")
+    @app.post("/qr")
 def qr(input:str, db: Session = Depends(get_db)):
     """
     Manages the data input from the QR scanner 
     Comes in json {body: "MESSASGE", user: "EMAIL"}
-    
-    If MESSAGE looks like NEW{i, j}, and the user is an admin, add bike_id i and station_id j into the bikes table.
-    If MESSAGE looks like {i, j} and bike_id, start station_id and, user_id and start time into rents table. 
-    If MESSAGE looks like {i, j} but bike_id = i is in the rents table with a null end time, update the end time and
-    end station_id. 
     """
     message = input.get('body', '')
     user_email = input.get('user', '')
 
-    # get the user
+    # get the user from login servern
     user_info_response = requests.get(f"http://127.0.0.1:5000/get_user_info/{user_email}")
     if user_info_response.status_code != 200:
         raise HTTPException(status_code=400, detail="User not found or unauthorized")
@@ -166,9 +161,9 @@ def qr(input:str, db: Session = Depends(get_db)):
     user_info = user_info_response.json()
     is_admin = user_info.get('is_admin', False)
 
-    # break down message 
+    # break down message into bike and station number 
     if message.startswith("NEW") and is_admin:
-        # get bike_id and station_id 
+        # get bike_id and station_id
         try:
             _, bike_id, station_id = message.split(",")
             bike_id = int(bike_id.strip())
@@ -176,7 +171,7 @@ def qr(input:str, db: Session = Depends(get_db)):
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid message format")
 
-        # add new bike 
+        # add new bike to bike database
         db.execute(models.Bikes.__table__.insert().values(bike_id=bike_id, station_id=station_id))
         db.commit()
         return {"message": "Bike added successfully"}
@@ -188,14 +183,14 @@ def qr(input:str, db: Session = Depends(get_db)):
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid message format")
 
-        # return a rental 
+        # return a rental, mark endtime
         existing_rent = db.query(models.Rents).filter(
             models.Rents.bike_id == bike_id,
             models.Rents.end_time == None
         ).first()
 
         if existing_rent:
-            # record return time 
+            # record return time in database 
             existing_rent.end_station_id = start_station_id
             existing_rent.end_time = datetime.now() 
             db.commit()
