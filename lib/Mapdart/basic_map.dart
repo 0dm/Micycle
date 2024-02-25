@@ -111,6 +111,8 @@ class BasicMap extends StatefulWidget {
 class _BasicMapState extends State<BasicMap> {
     Widget LocationLogo = const Icon(Icons.location_on_rounded);
     Widget StationLogo = const Icon(Icons.pedal_bike_sharp, color: Colors.black, size: 40,);
+    Widget StationLogoEmpty = const Icon(Icons.pedal_bike_sharp, color: Colors.red, size: 40,);
+
     LatLng curLoc = LatLng(43.59275, -79.64114);
     bool ifMoved = false;
     Icon locationActive = Icon(Icons.location_on);
@@ -127,7 +129,7 @@ class _BasicMapState extends State<BasicMap> {
             return;
         }
         _canFetchStation = false;
-        Timer(Duration(seconds: 10), () {
+        Timer(Duration(seconds: 1), () {
             _canFetchStation = true;
         });
 
@@ -148,7 +150,7 @@ class _BasicMapState extends State<BasicMap> {
                 stations.length,
                 (index) => Marker(
                     point: stations[index].location,
-                    child: GestureDetector(onTap: () => _showBottomSheet(index), child: StationLogo) // Replace 'markerClicked' with the actual widget you want to use as a marker
+                    child: GestureDetector(onTap: () => _showBottomSheet(index), child: stations[index].bikes == 0 ? StationLogoEmpty : StationLogo) 
                 ),
             );
             setState(() {
