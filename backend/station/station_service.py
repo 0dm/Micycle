@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
-
+from sqlalchemy import func
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -216,28 +216,40 @@ def qr(input:str, db: Session = Depends(get_db)):
 
     else:
         raise HTTPException(status_code=400, detail="Invalid message format")
-
-@app.get("/average_bikes")
-def get_average_bikes(db: Session = Depends(get_db)):
-    current_date = datetime.now()
-    current_hour_start = current_date.replace(minute=0, second=0, microsecond=0)
-
-    # Calculate the start and end time for the current hour on the same day of the week for the past weeks
-    past_weeks_data = []
-    for i in range(1, 5):  # Assuming you want to calculate the average for the past 4 weeks
-        start_time = current_hour_start - timedelta(weeks=i)
-        end_time = start_time + timedelta(hours=1)
-        average_bikes = db.query(models.Rent).filter(
-            models.Rent.start_time >= start_time,
-            models.Rent.start_time < end_time
-        ).count() / len(db.query(models.Station).all())
-        past_weeks_data.append(average_bikes)
-
-    # Calculate the average number of bikes at each station for the current hour
-    average_bikes = sum(past_weeks_data) / len(past_weeks_data)
-
-    return {"average_bikes": average_bikes}   
-
+ 
+@app.get("/stations/{station_id}/prediction")
+def predict_bike_availability(station_id: int, db: Session = Depends(get_db)):
+    """
+    Predicts the average number of bikes in a station at the current hour but on the same 4 previous days.
+    
+    Parameters:
+    - station_id: int - The ID of the station for which to make the prediction.
+    - db: Session - The database session.
+    
+    Returns:
+    - Dict[str, float]: A dictionary containing the prediction.
+    """
+    # Get the current date and hour
+    current_date = datetime.now().date()
+    current_hour = datetime.now().hour
+    
+    # Calculate the dates for the same hour on the 4 previous days
+    dates = [current_date - timedelta(days=i) for i in range(1, 5)]
+    
+    # Query the database for the number of bikes at the station for each date and hour
+    bike_counts = db.query(func.avg(models.Stations.num_bike)).filter(
+        models.Stations.id == station_id,
+        func.extract('hour', models.Stations.timestamp) == current_hour,
+        func.extract('date', models.Stations.timestamp).in_(dates)
+    ).group_by(func.extract('date', models.Stations.timestamp)).all()
+    
+    # Calculate the average number of bikes
+    if bike_counts:
+        avg_bikes = sum(count for count, in bike_counts) / len(bike_counts)
+    else:
+        avg_bikes = 0.0
+    
+    return {"station_id": station_id, "prediction": avg_bikes}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
