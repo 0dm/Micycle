@@ -6,6 +6,7 @@ from database import engine, Sessionlocal
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime, timedelta
 
 
 @asynccontextmanager
@@ -215,7 +216,27 @@ def qr(input:str, db: Session = Depends(get_db)):
 
     else:
         raise HTTPException(status_code=400, detail="Invalid message format")
-    
+
+@app.get("/average_bikes")
+def get_average_bikes(db: Session = Depends(get_db)):
+    current_date = datetime.now()
+    current_hour_start = current_date.replace(minute=0, second=0, microsecond=0)
+
+    # Calculate the start and end time for the current hour on the same day of the week for the past weeks
+    past_weeks_data = []
+    for i in range(1, 5):  # Assuming you want to calculate the average for the past 4 weeks
+        start_time = current_hour_start - timedelta(weeks=i)
+        end_time = start_time + timedelta(hours=1)
+        average_bikes = db.query(models.Rent).filter(
+            models.Rent.start_time >= start_time,
+            models.Rent.start_time < end_time
+        ).count() / len(db.query(models.Station).all())
+        past_weeks_data.append(average_bikes)
+
+    # Calculate the average number of bikes at each station for the current hour
+    average_bikes = sum(past_weeks_data) / len(past_weeks_data)
+
+    return {"average_bikes": average_bikes}   
 
 if __name__ == "__main__":
     import uvicorn
