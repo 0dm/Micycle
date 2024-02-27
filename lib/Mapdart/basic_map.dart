@@ -13,17 +13,20 @@ class Station {
   String address;
   LatLng location;
   int bikes;
+  int predicted_num_bike;
   Station(
       {required this.name,
       required this.address,
       required this.location,
-      required this.bikes});
+      required this.bikes,
+      required this.predicted_num_bike});
   factory Station.fromJson(Map<String, dynamic> json) {
     return Station(
         name: json['name'],
         address: json['address'],
         location: LatLng(json['x'], json['y']),
-        bikes: json['num_bike']);
+        bikes: json['num_bike'],
+        predicted_num_bike: json['predicted_num_bike']);
   }
   Map<String, dynamic> toJson() {
     return {
@@ -42,13 +45,14 @@ class BottomSheet extends StatelessWidget {
   final String name;
   final String addrs;
   final int bikes;
-
+  final int predictedBikes;
   BottomSheet(
       {required this.sidex,
       required this.sidey,
       required this.name,
       required this.addrs,
-      required this.bikes}
+      required this.bikes
+      ,required this.predictedBikes}
   );
 
     @override
@@ -79,10 +83,13 @@ class BottomSheet extends StatelessWidget {
                     ),
 
                     Text(
-                        'Remaining Bike: $bikes/10',
+                        'Remaining Bike: $bikes',
                         style: TextStyle(fontSize: 16), // Adjust the style as needed
                     ),
-
+                    Text(
+                        'Predicted Bikes Available: $predictedBikes',
+                        style: TextStyle(fontSize: 16), // Adjust the style as needed
+                    ),
                     SizedBox(height: 16),
                     Align(
                     	alignment: Alignment.centerLeft, // Aligning only this widget to the left
@@ -188,12 +195,12 @@ class _BasicMapState extends State<BasicMap> {
     String name = stations[index].name;
     String addrs = stations[index].address;
     int bikes = stations[index].bikes;
-
+    int predictedBikes = stations[index].predicted_num_bike; //CHANGE THIS
     showModalBottomSheet(
       context: context,
       builder: (context) {
         return BottomSheet(
-            sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes);
+            sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes,predictedBikes: predictedBikes);
       },
       isScrollControlled:
           true, // Set to true so the BottomSheet can take full screen height if needed

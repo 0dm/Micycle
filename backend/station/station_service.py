@@ -15,17 +15,17 @@ async def lifespan(app: FastAPI):
     num_stations = db.query(models.Stations).count()
     if num_stations == 0:
         stations = [
-            ("UTM Bus Station", "Mississauga, ON L5L 1C6", 43.547852, -79.663229, 2),
-            ("Student Centre Station", "3359 Mississauga Rd, Mississauga, ON L5L 1C6", 43.549030, -79.663554,5),
-            ("CCT Station", "Mississauga, ON L5L 1J7", 43.549449, -79.663100,5),
-            ("MN Station", "Mississauga, ON L5L 1J7", 43.550708, -79.663328,3),
-            ("Dean Henderson Memorial Park Station", "Mississauga, ON L5K 2R1",43.533203, -79.659932,5),
-            ("Sir Johns Homestead Station", "3061 Sir Johns Homestead #29, Mississauga, ON L5L 2N4", 43.541112, -79.662074,4),
-            ("Erindale Park Station", "1560 Dundas St W, Mississauga, ON L5C 1E5", 43.545935, -79.652739,10),
-            ("Woodchester Station", "2605 Woodchester Dr, Mississauga, ON", 43.526129, -79.675644,15),
-            ("Collegeway Station", "2686 The Collegeway #101, Mississauga, ON L5L 2M9 ", 43.531145, -79.692270,12),
-            ("Central Pkwy Station", "1132 Central Pkwy W, Mississauga, ON L5C 4E5 ",43.566689, -79.659101,15),
-            ("Square One Station", "2800 Lawrences, Mississauga, ON L5L 2N5", 43.594678, -79.644202,11),
+            ("UTM Bus Station", "Mississauga, ON L5L 1C6", 43.547852, -79.663229, 2,2),
+            ("Student Centre Station", "3359 Mississauga Rd, Mississauga, ON L5L 1C6", 43.549030, -79.663554,5,5),
+            ("CCT Station", "Mississauga, ON L5L 1J7", 43.549449, -79.663100,5,5),
+            ("MN Station", "Mississauga, ON L5L 1J7", 43.550708, -79.663328,3,3),
+            ("Dean Henderson Memorial Park Station", "Mississauga, ON L5K 2R1",43.533203, -79.659932,5,5),
+            ("Sir Johns Homestead Station", "3061 Sir Johns Homestead #29, Mississauga, ON L5L 2N4", 43.541112, -79.662074,4,4),
+            ("Erindale Park Station", "1560 Dundas St W, Mississauga, ON L5C 1E5", 43.545935, -79.652739,10,10),
+            ("Woodchester Station", "2605 Woodchester Dr, Mississauga, ON", 43.526129, -79.675644,15,15),
+            ("Collegeway Station", "2686 The Collegeway #101, Mississauga, ON L5L 2M9 ", 43.531145, -79.692270,12,12),
+            ("Central Pkwy Station", "1132 Central Pkwy W, Mississauga, ON L5C 4E5 ",43.566689, -79.659101,15,15),
+            ("Square One Station", "2800 Lawrences, Mississauga, ON L5L 2N5", 43.594678, -79.644202,11,11),
         ]
         for station_info in stations:
             station_model = models.Stations(
@@ -33,11 +33,13 @@ async def lifespan(app: FastAPI):
                 address=station_info[1],
                 x=station_info[2],
                 y=station_info[3]
-                ,num_bike=station_info[4]
+                ,num_bike=station_info[4],
+                predicted_num_bike=station_info[5]
             )
             db.add(station_model)
             db.commit()
         yield()
+        print(f"Found {num_stations} stations in the database. station populated.")
     else:
         print(f"Found {num_stations} stations in the database. Skipping population.")
         yield()
@@ -70,6 +72,7 @@ class Station(BaseModel):
     x: float
     y: float
     num_bike: int
+    predicted_num_bike: int
 
 @app.get("/stations")
 def read_api(db: Session = Depends(get_db)):
@@ -97,7 +100,7 @@ def create_station(station: Station, db: Session = Depends(get_db)):
     Returns:
         Station: The created station object.
     """
-    station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y, num_bike=station.num_bike)
+    station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y, num_bike=station.num_bike,predicted_num_bike=station.predicted_num_bike)
     db.add(station_model)
     db.commit()
     return station
@@ -197,8 +200,15 @@ def qr(input:str, db: Session = Depends(get_db)):
 
         if existing_rent:
             # record return time 
-            existing_rent.end_station_id = start_station_id
-            existing_rent.end_time = datetime.now() 
+            existing_rent.end_id = start_station_id
+            existing_rent.end_time = datetime.now()
+
+            # Update the num_bike attribute in the Rents table based on start_id
+            station = db.query(models.Stations).filter(models.Stations.id == existing_rent.start_id).first()
+            existing_rent.num_bike = station.num_bike + 1
+
+            # Update the num_bike attribute in the Stations table for the returned bike
+            db.query(models.Stations).filter(models.Stations.id == start_station_id).update({models.Stations.num_bike: models.Stations.num_bike + 1})
             db.commit()
             return {"message": "Rent updated successfully"}
 
@@ -217,39 +227,6 @@ def qr(input:str, db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=400, detail="Invalid message format")
  
-@app.get("/stations/{station_id}/prediction")
-def predict_bike_availability(station_id: int, db: Session = Depends(get_db)):
-    """
-    Predicts the average number of bikes in a station at the current hour but on the same 4 previous days.
-    
-    Parameters:
-    - station_id: int - The ID of the station for which to make the prediction.
-    - db: Session - The database session.
-    
-    Returns:
-    - Dict[str, float]: A dictionary containing the prediction.
-    """
-    # Get the current date and hour
-    current_date = datetime.now().date()
-    current_hour = datetime.now().hour
-    
-    # Calculate the dates for the same hour on the 4 previous days
-    dates = [current_date - timedelta(days=i) for i in range(1, 5)]
-    
-    # Query the database for the number of bikes at the station for each date and hour
-    bike_counts = db.query(func.avg(models.Stations.num_bike)).filter(
-        models.Stations.id == station_id,
-        func.extract('hour', models.Stations.timestamp) == current_hour,
-        func.extract('date', models.Stations.timestamp).in_(dates)
-    ).group_by(func.extract('date', models.Stations.timestamp)).all()
-    
-    # Calculate the average number of bikes
-    if bike_counts:
-        avg_bikes = sum(count for count, in bike_counts) / len(bike_counts)
-    else:
-        avg_bikes = 0.0
-    
-    return {"station_id": station_id, "prediction": avg_bikes}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
