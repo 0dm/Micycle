@@ -58,7 +58,7 @@ def update_predicted_bikes(day):
         session.commit()
 # Example usage
 day = datetime(2024, 2, 29)
-average_bikes_per_hour = get_average_num_bikes_per_hour(day,3)
-print(average_bikes_per_hour)
-print(len(average_bikes_per_hour))
+#average_bikes_per_hour = get_average_num_bikes_per_hour(day,3)
+#print(average_bikes_per_hour)
+#print(len(average_bikes_per_hour))
 # update_predicted_bikes(day)

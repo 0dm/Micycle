@@ -33,10 +33,14 @@ async def lifespan(app: FastAPI):
                 address=station_info[1],
                 x=station_info[2],
                 y=station_info[3]
-                ,num_bike=station_info[4],
-                predicted_num_bike=get_average_num_bikes_per_hour(datetime.now())
+                ,num_bike=station_info[4]
             )
             db.add(station_model)
+            db.commit()
+
+        # Update the predicted number of bikes for each station
+        for station_model in db.query(models.Stations).all():
+            station_model.predicted_num_bike = get_average_num_bikes_per_hour(datetime.now(), station_model.id)
             db.commit()
         yield()
         print(f"Found {num_stations} stations in the database. station populated.")
