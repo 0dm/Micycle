@@ -1,90 +1,64 @@
-# Cache for predicted_num_bike for each station
-predictions_cache = {}
-
-import models
-from database import engine, Sessionlocal
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-import time
-import threading
-def calculate_predicted_num_bike(db: Session, station_id: int, current_time: datetime):
-    global predictions_cache
-    current_hour_start = current_time.replace(minute=0, second=0, microsecond=0)
-    current_hour_end = current_hour_start + timedelta(hours=1)
-    
-    # Check if the prediction is already cached
-    if station_id in predictions_cache and predictions_cache[station_id]["hour_start"] == current_hour_start:
-        return predictions_cache[station_id]["predicted_num_bike"]
-    
-    total_bikes = 0
-    total_weeks = 0
+from sqlalchemy import func
+from database import Sessionlocal, engine, Base
+from models import Stations, Bikes, Rents
+from collections import defaultdict
+cache = defaultdict(lambda: defaultdict(list))
 
-    for i in range(1, 5):
-        hour_start = current_time - timedelta(weeks=i)
-        hour_end = hour_start + timedelta(hours=1) # Predict up until the next hour
+def get_average_num_bikes_per_hour(day,station_id):
+    if day in cache and station_id in cache[day] and sum(cache[day][station_id]) != 0:
+        print("cached")
+        return cache[day][station_id]
+    result = [0] * 24
+    for i in range(4):  # Loop over the past four weeks
+        start_week = day - timedelta(weeks=i+1)
+        for hour in range(24):
+            start_hour = datetime(start_week.year, start_week.month, start_week.day, hour)
+            end_hour = start_hour + timedelta(hours=1)
 
-        
-        # Get the num_bike and time of the latest rent for the current hour
-        latest_rent_start = db.query(models.Rents.num_bike, models.Rents.start_time).filter(
-            models.Rents.start == station_id,
-            models.Rents.start_time >= hour_start,
-            models.Rents.start_time <= hour_end,
-            (models.Rents.start_time >= current_hour_start) & (models.Rents.start_time < current_hour_end)
-        ).order_by(models.Rents.start_time.desc()).first()
+            with Sessionlocal() as session:
+                # Get records from previous weeks at the same hour, ordered by start time
+                records_start_time = session.query(Rents).filter(
+                    Rents.start_time >= start_hour,
+                    Rents.start_time < end_hour, Rents.start == station_id
+                ).order_by(Rents.start_time).all()
 
-        # Get the num_bike and time of the latest return for the current hour
-        latest_rent_end = db.query(models.Rents.num_bike, models.Rents.end_time).filter(
-            models.Rents.end == station_id,
-            models.Rents.end_time >= hour_start,
-            models.Rents.end_time <= hour_end,
-            (models.Rents.end_time >= current_hour_start) & (models.Rents.end_time < current_hour_end)
-        ).order_by(models.Rents.end_time.desc()).first()
+                # Get records from previous weeks at the same hour, ordered by end time descending
+                records_end_time = session.query(Rents).filter(
+                    Rents.end_time >= start_hour,
+                    Rents.end_time < end_hour, Rents.end == station_id
+                ).order_by(Rents.end_time.desc()).all()
 
-        # Compare the times of the latest rent and return, and use the one with the greater time
-        if latest_rent_start and latest_rent_end:
-            if latest_rent_start[1] > latest_rent_end[1]:
-                total_bikes += latest_rent_start[0]
-            else:
-                total_bikes += latest_rent_end[0]
-            total_weeks += 1
-        elif latest_rent_start:
-            total_bikes += latest_rent_start[0]
-            total_weeks += 1
-        elif latest_rent_end:
-            total_bikes += latest_rent_end[0]
-            total_weeks += 1
+                if records_end_time and records_start_time:
+                    if records_start_time[0].start_time > records_end_time[0].end_time:
+                        num_bike_hour = records_start_time[0].start_num_bike
+                    else:
+                        num_bike_hour = records_start_time[0].end_num_bike
+                else:
+                    num_bike_hour = 0
 
-    # Calculate the predicted number of bikes
-    if total_weeks > 0:
-        predicted_num_bike = total_bikes // total_weeks
-    else:
-        predicted_num_bike = 0
-    # Cache the prediction
-    predictions_cache[station_id] = {"hour_start": current_hour_start, "predicted_num_bike": predicted_num_bike}
-    
-    return predicted_num_bike
+                # Cache the result
+                cache[start_week][station_id].append(num_bike_hour)
+                result[hour] += num_bike_hour
 
-def update_predicted_num_bikes():
-    global predictions_cache
-    predictions_cache = {}  # Clear the cache
-    db = Sessionlocal()
-    for station in db.query(models.Stations).all():
-        station_id = station.id
-        current_time = datetime.now()
-        predicted_num_bike = calculate_predicted_num_bike(db, station_id, current_time)
-        db.query(models.Stations).filter(models.Stations.id == station_id).update({models.Stations.predicted_num_bike: predicted_num_bike})
-    db.commit()
-    db.close()
+    # Calculate the average for each hour
 
-# Schedule the update of predicted_num_bike every hour
-def update_predictions_scheduler():
-    while True:
-        current_time = datetime.now()
-        if current_time.minute == 0 and current_time.second == 0:
-            update_predicted_num_bikes()
-        time.sleep(1)
+    result = [round(num/4) for num in result]
 
-# Start the scheduler in a separate thread
-scheduler_thread = threading.Thread(target=update_predictions_scheduler)
-print("Starting scheduler thread...")
-scheduler_thread.start()
+    return result
+
+def update_predicted_bikes(day):
+    with Sessionlocal() as session:
+        for station in session.query(Stations).all():
+            # Calculate the average number of bikes per hour for the station
+            average_bikes_per_hour = get_average_num_bikes_per_hour(day, station.id)
+            # Update the station's num_predicted_bike attribute with the calculated average
+            session.query(Stations).filter_by(id=station.id).update({"predicted_num_bike": average_bikes_per_hour})
+
+        session.commit()
+# Example usage
+day = datetime(2024, 2, 29)
+average_bikes_per_hour = get_average_num_bikes_per_hour(day,3)
+print(average_bikes_per_hour)
+print(len(average_bikes_per_hour))
+# update_predicted_bikes(day)

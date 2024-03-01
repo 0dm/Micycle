@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey,JSON
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy import Boolean
@@ -11,7 +11,7 @@ class Stations(Base):
     x = Column(Float)
     y = Column(Float)
     num_bike = Column(Integer)
-    predicted_num_bike = Column(Integer)
+    predicted_num_bike = Column(JSON)
     bikes = relationship("Bikes", back_populates="stations")
 
 class Bikes(Base):
@@ -29,7 +29,8 @@ class Rents(Base):
     start_time = Column(DateTime)
     end = Column(Integer, ForeignKey('stations.id'))
     end_time = Column(DateTime, nullable=True)
-    num_bike = Column(Integer)  # New attribute to keep track of the number of bikes after renting/returning
+    start_num_bike = Column(Integer)
+    end_num_bike = Column(Integer)
     bikes = relationship("Bikes", back_populates="rents")
     start_station = relationship("Stations", foreign_keys=[start])
     end_station = relationship("Stations", foreign_keys=[end])

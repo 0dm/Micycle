@@ -13,7 +13,7 @@ class Station {
   String address;
   LatLng location;
   int bikes;
-  int predicted_num_bike;
+  List<dynamic> predicted_num_bike;
   Station(
       {required this.name,
       required this.address,
@@ -35,6 +35,7 @@ class Station {
       'x': location.latitude,
       'y': location.longitude,
       'num_bike': bikes,
+      'predicted_num_bike': predicted_num_bike
     };
   }
 }
@@ -45,14 +46,14 @@ class BottomSheet extends StatelessWidget {
   final String name;
   final String addrs;
   final int bikes;
-  final int predictedBikes;
+  final List<dynamic> predicted_num_bike;
   BottomSheet(
       {required this.sidex,
       required this.sidey,
       required this.name,
       required this.addrs,
       required this.bikes
-      ,required this.predictedBikes}
+      ,required this.predicted_num_bike}
   );
 
     @override
@@ -87,7 +88,7 @@ class BottomSheet extends StatelessWidget {
                         style: TextStyle(fontSize: 16), // Adjust the style as needed
                     ),
                     Text(
-                        'Predicted Bikes Available: $predictedBikes',
+                        'Predicted Bikes Available: $predicted_num_bike',
                         style: TextStyle(fontSize: 16), // Adjust the style as needed
                     ),
                     SizedBox(height: 16),
@@ -195,12 +196,12 @@ class _BasicMapState extends State<BasicMap> {
     String name = stations[index].name;
     String addrs = stations[index].address;
     int bikes = stations[index].bikes;
-    int predictedBikes = stations[index].predicted_num_bike; //CHANGE THIS
+    List<dynamic> predicted_num_bike= stations[index].predicted_num_bike; //CHANGE THIS
     showModalBottomSheet(
       context: context,
       builder: (context) {
         return BottomSheet(
-            sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes,predictedBikes: predictedBikes);
+            sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes,predicted_num_bike: predicted_num_bike,);
       },
       isScrollControlled:
           true, // Set to true so the BottomSheet can take full screen height if needed
