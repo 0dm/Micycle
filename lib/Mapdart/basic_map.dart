@@ -7,6 +7,8 @@ import 'location_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'package:fl_chart/fl_chart.dart';
+import 'bar_chart.dart';
 
 class Station {
   String name;
@@ -58,6 +60,8 @@ class BottomSheet extends StatelessWidget {
 
     @override
     Widget build(BuildContext context) {
+        List<int> intList = predicted_num_bike.map((e) => e as int).toList();
+
         return Container(
             constraints: BoxConstraints.expand(
                 width: MediaQuery.of(context).size.width,
@@ -69,7 +73,7 @@ class BottomSheet extends StatelessWidget {
                     Image.asset(
                         'assets/images/placeHolderBike.jpeg', // Replace with your image asset
                         width: MediaQuery.of(context).size.width, // Set image width to full screen width
-                        height: MediaQuery.of(context).size.height * 0.3, // Adjust the size accordingly
+                        height: MediaQuery.of(context).size.height * 0.15, // Adjust the size accordingly
                         fit: BoxFit.cover, // Cover the entire width while keeping aspect ratio
                     ),
                     SizedBox(height: 16),
@@ -80,16 +84,15 @@ class BottomSheet extends StatelessWidget {
                     ),
                     Text(
                         '$addrs',
-                        style: TextStyle(fontSize: 16), // Adjust the style as needed
+                        style: TextStyle(fontSize: 16), // Adjust the stylxse as needed
                     ),
 
                     Text(
                         'Remaining Bike: $bikes',
                         style: TextStyle(fontSize: 16), // Adjust the style as needed
                     ),
-                    Text(
-                        'Predicted Bikes Available: $predicted_num_bike',
-                        style: TextStyle(fontSize: 16), // Adjust the style as needed
+                    BarChartSample3(
+                        data: intList,
                     ),
                     SizedBox(height: 16),
                     Align(
