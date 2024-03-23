@@ -7,30 +7,33 @@ import 'Mapdart/basic_map.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'qrscanner.dart';
+import 'chat.dart';
 
 void main() {
   runApp(const App());
 }
 
 class App extends StatelessWidget {
+  
   const App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MiCycle',
+      title: 'Micycle',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const Home(),
+      home: Home(),
     );
   }
 }
 
 class Home extends StatefulWidget {
+  static var displayName;
   static var userEmail;
-  const Home({super.key});
 
+  const Home({Key? key}) : super(key: key);
   @override
   _HomeState createState() => _HomeState();
 }
@@ -45,7 +48,7 @@ class _HomeState extends State<Home> {
     else
       QRScannerPage(),
     const BikePage(),
-    const InfoPage(),
+    Chat(),
   ];
 
   void _onItemTapped(int index) {
@@ -57,10 +60,10 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('MiCycle 🚲'),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _widgetOptions,
       ),
-      body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -76,8 +79,8 @@ class _HomeState extends State<Home> {
             label: 'Bike',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: 'Info',
+            icon: Icon(Icons.chat_bubble),
+            label: 'Chat',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -203,14 +206,5 @@ class BikePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('Bike Page'));
-  }
-}
-
-class InfoPage extends StatelessWidget {
-  const InfoPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Info Page'));
   }
 }

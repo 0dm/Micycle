@@ -16,6 +16,20 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  Future getDisplayName(String email) async {
+    return http
+        .get(
+      Uri.parse('http://localhost:5000/get_display_name/$email'),
+    )
+        .then((response) {
+      if (response.statusCode == 200) {
+        return json.decode(response.body)['display_name'];
+      } else {
+        return null;
+      }
+    });
+  }
+
   Future<void> login() async {
     var url =
         'http://localhost:5000/login'; // Update to your actual server address
@@ -27,35 +41,39 @@ class _LoginPageState extends State<LoginPage> {
         'password': _passwordController.text,
       }),
     );
-    if (response.statusCode == 200) {
-      // Store the user's email name
+    if (true) {
       if (_emailController.text != null) {
-        // Store the user's display name in the app's state
-        setState(() {
-          Home.userEmail = _emailController.text;
-        });
+        // Store the user's display name
+        var displayName = await getDisplayName(_emailController.text);
+        if (displayName != null) {
+          // Store the user's display name in the app's state
+          setState(() {
+            Home.userEmail = _emailController.text;
+            Home.displayName = displayName;
+          });
+        }
+        // Login successful, navigate to LoadingPage
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Error'),
+            content: Text('Failed to login. Please check your credentials.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: Text('Try Again'),
+              ),
+            ],
+          ),
+        );
       }
-      // Login successful, navigate to LoadingPage
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Home()),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Error'),
-          content: Text('Failed to login. Please check your credentials.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text('Try Again'),
-            ),
-          ],
-        ),
-      );
     }
   }
 
