@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'Mapdart/basic_map.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const App());
@@ -22,6 +27,7 @@ class App extends StatelessWidget {
 }
 
 class Home extends StatefulWidget {
+  static var userEmail;
   const Home({super.key});
 
   @override
@@ -33,7 +39,7 @@ class _HomeState extends State<Home> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
-    const QRScannerPage(),
+    QRScanPage(),
     const BikePage(),
     const InfoPage(),
   ];
@@ -93,12 +99,93 @@ class MapPage extends StatelessWidget {
   }
 }
 
-class QRScannerPage extends StatelessWidget {
-  const QRScannerPage({super.key});
+class QRScanPage extends StatefulWidget {
+  @override
+  _QRScanPageState createState() => _QRScanPageState();
+}
+
+class _QRScanPageState extends State<QRScanPage> {
+  final qrKey = GlobalKey(debugLabel: 'QR');
+  late QRViewController controller;
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('QR Scanner Page'));
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('QR Scanner'),
+      ),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            flex: 1,
+            child: Stack(
+              children: <Widget>[
+                QRView(
+                  key: qrKey,
+                  onQRViewCreated: _onQRViewCreated,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+                Center(
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.red, width: 2),
+                      color: Colors.transparent,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onQRViewCreated(QRViewController controller) {
+    this.controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      print('QR Code Scanned: ${scanData.code}');
+      print(Home.userEmail);
+      // show toast
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('QR Code Scanned'),
+      )
+          //  post request that sends a json like {message: qrdata, user: Home.email} : (on port 8000)]
+          );
+      http.post(
+        Uri.parse('http://localhost:8000/qr'),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          'message': scanData.code,
+          'user': Home.userEmail,
+        }),
+      );
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _requestCameraPermission();
+  }
+
+  Future<void> _requestCameraPermission() async {
+    PermissionStatus status = await Permission.camera.request();
+    if (!status.isGranted) {
+      // Show a message to the user explaining why the app needs the camera permission.
+    }
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
   }
 }
 
