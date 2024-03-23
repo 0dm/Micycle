@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'qrscanner.dart';
 import 'chat.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:flutter/foundation.dart'; // Import this package
 
 void main() {
   runApp(const App());
@@ -43,10 +44,7 @@ class _HomeState extends State<Home> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
-    if (Platform.isIOS || Platform.isAndroid || Platform.isMacOS)
-      QRScanPage()
-    else
-      QRScannerPage(),
+    QRScannerPage(), // Fallback for other platforms
     const BikePage(),
     Chat(),
   ];

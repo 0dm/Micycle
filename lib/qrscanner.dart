@@ -3,25 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'dart:typed_data';
+import 'scanner.dart';
 
 final Uri _url = Uri.parse('web/scanner.html');
 
-void main() {
-  runApp(Scanner());
-}
-
-class Scanner extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'QR Code Scanner',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: QRScannerPage(),
-    );
-  }
-}
 
 class QRScannerPage extends StatefulWidget {
   @override
@@ -70,8 +57,13 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   void _launchQRScanner() async {
-    if (!await launchUrl(_url)) {
-      throw Exception('Could not launch $_url');
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Scanner()),
+    );
+    
+    if (result != null) {
+      print('Scanned QR Code: $result');
     }
   }
 
