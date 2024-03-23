@@ -20,7 +20,7 @@ class Main extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginPage(),
+      home: Home(),
       routes: {
         '/login': (context) => LoginPage(),
         // Define additional routes as needed

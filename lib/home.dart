@@ -1,11 +1,12 @@
 import 'dart:convert';
-
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'Mapdart/basic_map.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
+import 'qrscanner.dart';
 
 void main() {
   runApp(const App());
@@ -39,7 +40,10 @@ class _HomeState extends State<Home> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
-    QRScanPage(),
+    if (Platform.isIOS || Platform.isAndroid || Platform.isMacOS)
+      QRScanPage()
+    else
+      QRScannerPage(),
     const BikePage(),
     const InfoPage(),
   ];
@@ -108,6 +112,7 @@ class _QRScanPageState extends State<QRScanPage> {
   final qrKey = GlobalKey(debugLabel: 'QR');
   late QRViewController controller;
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,6 +154,9 @@ class _QRScanPageState extends State<QRScanPage> {
 
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
+    if (!(Platform.isIOS || Platform.isAndroid)) {
+      controller.flipCamera();
+    }
     controller.scannedDataStream.listen((scanData) {
       print('QR Code Scanned: ${scanData.code}');
       print(Home.userEmail);
