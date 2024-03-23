@@ -37,7 +37,7 @@ dependencies:
   geolocator: ^9.0.1
   flutter_map_marker_cluster: any  
   flutter_map_marker_popup: any  
-  qr_code_scanner: ^0.5.2
+  mobile_scanner: ^4.0.1
   permission_handler: ^10.4.0
   flutter_barcode_sdk: ^2.2.6
   webview_flutter: ^2.0.14

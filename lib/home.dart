@@ -1,20 +1,20 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'Mapdart/basic_map.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'qrscanner.dart';
 import 'chat.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 void main() {
   runApp(const App());
 }
 
 class App extends StatelessWidget {
-  
   const App({Key? key}) : super(key: key);
 
   @override
@@ -112,72 +112,71 @@ class QRScanPage extends StatefulWidget {
 }
 
 class _QRScanPageState extends State<QRScanPage> {
-  final qrKey = GlobalKey(debugLabel: 'QR');
-  late QRViewController controller;
-
+  late MobileScannerController cameraController = MobileScannerController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('QR Scanner'),
-      ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            flex: 1,
-            child: Stack(
-              children: <Widget>[
-                QRView(
-                  key: qrKey,
-                  onQRViewCreated: _onQRViewCreated,
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                  ),
-                ),
-                Center(
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.red, width: 2),
-                      color: Colors.transparent,
-                    ),
-                  ),
-                ),
-              ],
+        title: const Text('Scanner'),
+        actions: [
+          IconButton(
+            color: Colors.black,
+            icon: ValueListenableBuilder(
+              valueListenable: cameraController.torchState,
+              builder: (context, state, child) {
+                switch (state as TorchState) {
+                  case TorchState.off:
+                    return const Icon(Icons.flash_off, color: Colors.grey);
+                  case TorchState.on:
+                    return const Icon(Icons.flash_on, color: Colors.yellow);
+                }
+              },
             ),
+            iconSize: 32.0,
+            onPressed: () => cameraController.toggleTorch(),
+          ),
+          IconButton(
+            color: Colors.black,
+            icon: ValueListenableBuilder(
+              valueListenable: cameraController.cameraFacingState,
+              builder: (context, state, child) {
+                switch (state as CameraFacing) {
+                  case CameraFacing.front:
+                    return const Icon(Icons.camera_front);
+                  case CameraFacing.back:
+                    return const Icon(Icons.camera_rear);
+                }
+              },
+            ),
+            iconSize: 32.0,
+            onPressed: () => cameraController.switchCamera(),
           ),
         ],
       ),
+      body: Stack(
+        children: <Widget>[
+          MobileScanner(
+            // fit: BoxFit.contain,
+            controller: cameraController,
+            onDetect: (capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              final Uint8List? image = capture.image;
+              for (final barcode in barcodes) {
+                print('Barcode found! ${barcode.rawValue}');
+              }
+            },
+          ),
+          Center(
+              child: Container(
+            width: 200,
+            height: 200,
+            decoration:
+                BoxDecoration(border: Border.all(color: Colors.red, width: 3)),
+          ))
+        ],
+      ),
     );
-  }
-
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    if (!(Platform.isIOS || Platform.isAndroid)) {
-      controller.flipCamera();
-    }
-    controller.scannedDataStream.listen((scanData) {
-      print('QR Code Scanned: ${scanData.code}');
-      print(Home.userEmail);
-      // show toast
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('QR Code Scanned'),
-      )
-          //  post request that sends a json like {message: qrdata, user: Home.email} : (on port 8000)]
-          );
-      http.post(
-        Uri.parse('http://localhost:8000/qr'),
-        headers: {"Content-Type": "application/json"},
-        body: json.encode({
-          'message': scanData.code,
-          'user': Home.userEmail,
-        }),
-      );
-    });
   }
 
   @override
@@ -195,7 +194,7 @@ class _QRScanPageState extends State<QRScanPage> {
 
   @override
   void dispose() {
-    controller?.dispose();
+    cameraController?.dispose();
     super.dispose();
   }
 }
