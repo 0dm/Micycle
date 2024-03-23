@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
         'password': _passwordController.text,
       }),
     );
-    if (true) {
+    if (response.statusCode == 200) {
       if (_emailController.text != null) {
         // Store the user's display name
         var displayName = await getDisplayName(_emailController.text);
