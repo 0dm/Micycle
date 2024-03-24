@@ -176,7 +176,7 @@ class _BasicMapState extends State<BasicMap> {
             child: GestureDetector(
                 onTap: () => _showBottomSheet(index),
                 child:
-                    StationLogo) // Replace 'markerClicked' with the actual widget you want to use as a marker
+                    stations[index].bikes == 0 ? StationLogoEmpty : StationLogo) // Replace 'markerClicked' with the actual widget you want to use as a marker
             ),
       );
       setState(() {
@@ -313,6 +313,32 @@ class _BasicMapState extends State<BasicMap> {
               ),
             ],
           ),
+                          Align(
+                    alignment: Alignment.topLeft,   
+                    child: Padding(                            
+                        padding: EdgeInsets.all(10.0),
+                        child: Container(
+                            width: 80, // Diameter of the circle
+                            height: 80, // Diameter of the circle
+                            margin: EdgeInsets.only(right: 8), // Spacing between buttons
+                            decoration: BoxDecoration(
+                                color: Colors.blue, // Color of the circle
+                                shape: BoxShape.circle,
+                            ),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                    fetchStation();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    shape: CircleBorder(),
+                                    backgroundColor: Colors.blue, // Background color of the button
+                                ),
+                            child: Icon(Icons.refresh)
+                            )
+                        )
+                    ),
+                ),
+
         ],
       ),
     );

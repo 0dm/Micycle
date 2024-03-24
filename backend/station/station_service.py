@@ -144,7 +144,7 @@ def delete_station(station_id:int, db: Session = Depends(get_db)):
     db.query(models.Stations).filter(models.Stations.id == station_id).delete()
     db.commit()
 
-    @app.post("/qr")
+@app.post("/qr")
 def qr(input:str, db: Session = Depends(get_db)):
     """
     Manages the data input from the QR scanner 
