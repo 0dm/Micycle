@@ -1,4 +1,3 @@
-import 'package:Micycle/widgets/station_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -9,180 +8,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import '../widgets/station_bubble.dart';
-
-class Station{
-    String name;
-    String address;
-    LatLng location;
-    int bikes;
-    Station({required this.name, required this.address, required this.location, required this.bikes});
-    factory Station.fromJson(Map<String, dynamic> json){
-        return Station(
-            name: json['name'],
-            address: json['address'],
-            location: LatLng(json['x'], json['y']),
-            bikes: json['num_bike']
-        );
-    }
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'address': address,
-      'x': location.latitude,
-      'y': location.longitude,
-      'num_bike': bikes,
-    };
-  }
-}
-
-class BottomSheet extends StatelessWidget {
-  const BottomSheet(
-      {required this.sidex,
-      required this.sidey,
-      required this.name,
-      required this.addrs,
-      required this.bikes,
-      required this.index,
-      });
-
-  final double sidex;
-  final double sidey;
-  final String name;
-  final String addrs;
-  final int bikes;
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints.expand(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height * 0.75),
-      padding: EdgeInsets.all(16),
-      child: Column(
-        children: <Widget>[
-          Image.asset(
-            'assets/images/placeHolderBike.jpeg', // Replace with your image asset
-            width: MediaQuery.of(context)
-                .size
-                .width, // Set image width to full screen width
-            height: MediaQuery.of(context).size.height *
-                0.3, // Adjust the size accordingly
-            fit: BoxFit
-                .cover, // Cover the entire width while keeping aspect ratio
-          ),
-          SizedBox(height: 16),
-          Text(
-            '$name',
-            style: TextStyle(fontSize: 30), // Adjust the style as needed
-          ),
-          Text(
-            '$addrs',
-            style: TextStyle(fontSize: 16), // Adjust the style as needed
-          ),
-          Text(
-            'Remaining Bike: $bikes/10',
-            style: TextStyle(fontSize: 16), // Adjust the style as needed
-          ),
-          SizedBox(height: 16),
-          Align(
-            alignment:
-                Alignment.centerLeft, // Aligning only this widget to the left
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment
-                  .spaceBetween, // To prevent the Row from occupying the entire horizontal space
-              children: [
-                StationBubble(
-                    onPressed: (){
-                      Uri _url = Uri.parse( 'https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey'); launchUrl(_url);
-                      }, 
-                    icon: Icon(Icons.directions)
-                  ),
-                Row(
-                  children: [
-                  StationBubble(
-                    onPressed: (){_onEditStationPressed(index + 1);}, 
-                    icon: Icon(Icons.edit)
-                  ),
-                  StationBubble(
-                    onPressed: (){_onDeleteStationPressed(index + 1);}, 
-                    icon: Icon(Icons.delete)
-                  ),
-                  ],
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-  
-  void _onEditStationPressed(int index) async {
-    var response;
-    var url = Uri.http('localhost:8000', 'stations/$index');
-
-    try {
-      response = await http.get(url);
-    } catch (e) {
-      print(e);
-      return;
-    }
-    print(index);
-    print(response.body);
-
-    Station station =  Station.fromJson(json.decode(response.body));
-
-    TextEditingController nameController = TextEditingController(text: station.name);
-    TextEditingController addressController = TextEditingController(text: station.address);
-    TextEditingController latitudeController = TextEditingController(text: station.location.latitude.toString());
-    TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
-    TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
-
-    // showDialog(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return StationForm(
-    //       text: "Add a New Station", 
-    //       nameController: nameController, 
-    //       addressController: addressController, 
-    //       latitudeController: latitudeController, 
-    //       longitudeController: longitudeController, 
-    //       bikesController: bikesController, 
-    //       onPressed: () async 
-    //       {
-    //            //stations.put
-    //       }
-    //     );
-    //   }
-    // );
-   //stations.put
-  }
-
-  //make sure to raise proper errors here
-  void _onDeleteStationPressed(int index) async {
-    var response;
-    var url = Uri.http('localhost:8000', 'stations/');
-    try {
-      final response = await http.delete(
-        url,
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: json.encode( {"station_id": index}),
-      );
-
-      if(response == 200){
-        print("works");
-      }else{
-        print("did not work");
-      }
-    }catch (error) {
-      print('Failed to delete station. Error: $error');
-    }
-    
-  }
-}
+import '../widgets/station_form.dart';
+import '../widgets/bottom_sheet.dart';
+import '../models/station.dart';
 
 class BasicMap extends StatefulWidget {
   const BasicMap({super.key});
@@ -253,7 +81,6 @@ class _BasicMapState extends State<BasicMap> {
   }
 
     void _showBottomSheet(int index) {
-        // int id = stations[index].id;
         double sidex = stations[index].location.latitude;
         double sidey = stations[index].location.longitude;
         String name = stations[index].name;
@@ -262,7 +89,34 @@ class _BasicMapState extends State<BasicMap> {
         showModalBottomSheet(
             context: context,
             builder: (context) { 
-                return BottomSheet(index: index, sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes);
+                return StationBottomSheet(
+                  index: index, 
+                  sidex: sidex, 
+                  sidey: sidey, 
+                  name: name, 
+                  addrs: addrs, 
+                  bikes: bikes,
+                  children: [
+                StationBubble(
+                    onPressed: (){
+                      Uri _url = Uri.parse( 'https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey'); launchUrl(_url);
+                      }, 
+                    icon: Icon(Icons.directions)
+                  ),
+                Row(
+                  children: [
+                  StationBubble(
+                    onPressed: (){_onEditStationPressed(index + 1);}, 
+                    icon: Icon(Icons.edit)
+                  ),
+                  StationBubble(
+                    onPressed: (){_onDeleteStationPressed(index + 1);}, 
+                    icon: Icon(Icons.delete)
+                  ),
+                  ],
+                ),
+              ],
+                  );
             },
             isScrollControlled: true, // Set to true so the BottomSheet can take full screen height if needed
         );
@@ -476,9 +330,73 @@ class _BasicMapState extends State<BasicMap> {
               Navigator.of(context).pop();
           }
         );
-    },
-  );
-}
+      },
+    );
+  }
+
+  void _onEditStationPressed(int index) async {
+    var response;
+    var url = Uri.http('localhost:8000', 'stations/$index');
+
+    try {
+      response = await http.get(url);
+    } catch (e) {
+      print(e);
+      return;
+    }
+    print(index);
+    print(response.body);
+
+    Station station =  Station.fromJson(json.decode(response.body));
+
+    TextEditingController nameController = TextEditingController(text: station.name);
+    TextEditingController addressController = TextEditingController(text: station.address);
+    TextEditingController latitudeController = TextEditingController(text: station.location.latitude.toString());
+    TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
+    TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StationForm(
+          text: "Edit a Station", 
+          nameController: nameController, 
+          addressController: addressController, 
+          latitudeController: latitudeController, 
+          longitudeController: longitudeController, 
+          bikesController: bikesController, 
+          onPressed: () async 
+          {
+                //stations.put
+          }
+        );
+      }
+    );
+  }
+
+  //make sure to raise proper errors here
+  void _onDeleteStationPressed(int index) async {
+    var response;
+    var url = Uri.http('localhost:8000', 'stations/');
+    try {
+      final response = await http.delete(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: json.encode( {"station_id": index}),
+      );
+
+      if(response == 200){
+        print("works");
+      }else{
+        print("did not work");
+      }
+    }catch (error) {
+      print('Failed to delete station. Error: $error');
+    }
+    
+  }
 
   void promptUserForLocation() {
     final snackBar = SnackBar(
