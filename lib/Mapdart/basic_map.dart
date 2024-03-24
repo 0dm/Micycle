@@ -7,10 +7,10 @@ import 'location_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import '../widgets/station_bubble.dart';
-import '../widgets/station_form.dart';
-import '../widgets/bottom_sheet.dart';
-import '../models/station.dart';
+import 'station_bubble.dart';
+import 'station_form.dart';
+import 'bottom_sheet.dart';
+import 'station.dart';
 
 class BasicMap extends StatefulWidget {
   const BasicMap({super.key});

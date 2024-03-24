@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/station.dart';
+import 'station.dart';
 
 class StationBottomSheet extends StatelessWidget {
   const StationBottomSheet(
