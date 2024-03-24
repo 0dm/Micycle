@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 import hashlib
 import os
 
@@ -70,6 +70,20 @@ def login():
         )
     else:
         return jsonify({"error": "Invalid email or password"}), 401
+
+
+@app.route("/get_user_info/<email>", methods=["GET"])
+def get_user_info(email):
+    user = User.query.filter_by(email=email).first()
+    if user:
+        return jsonify({
+            "id": user.id,
+            "display_name": user.display_name,
+            "is_admin": user.is_admin,
+            "email": user.email
+        }), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
 
 
 if __name__ == "__main__":

@@ -10,6 +10,8 @@
 	<true/>
 	<key>com.apple.security.network.client</key>
 	<key>com.apple.security.personal-information.location</key>
+	<key>com.apple.security.device.camera</key>
+<true/>
 <true/>
 <true/>
 </dict>
