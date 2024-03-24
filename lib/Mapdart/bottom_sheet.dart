@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'station.dart';
+import 'bar_chart.dart';
 
 class StationBottomSheet extends StatelessWidget {
   const StationBottomSheet(
@@ -11,6 +12,7 @@ class StationBottomSheet extends StatelessWidget {
       required this.bikes,
       required this.index,
       required this.children,
+      required this.predicted_num_bike
       });
 
   final double sidex;
@@ -20,9 +22,11 @@ class StationBottomSheet extends StatelessWidget {
   final int bikes;
   final int index;
   final List<Widget> children;
+  final List<dynamic> predicted_num_bike;
 
   @override
   Widget build(BuildContext context) {
+    List<int> intList = predicted_num_bike.map((e) => e as int).toList();
     return Container(
       constraints: BoxConstraints.expand(
           width: MediaQuery.of(context).size.width,
@@ -52,6 +56,9 @@ class StationBottomSheet extends StatelessWidget {
           Text(
             'Remaining Bike: $bikes/10',
             style: TextStyle(fontSize: 16), // Adjust the style as needed
+          ),
+          BarChartSample3(
+            data: intList,
           ),
           SizedBox(height: 16),
           Align(

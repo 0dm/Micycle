@@ -24,7 +24,7 @@ class StationBubble extends StatelessWidget{
         onPressed: onPressed,
           style: ElevatedButton.styleFrom(
               shape: CircleBorder(),
-              primary: Colors.blue, // Background color of the button
+              backgroundColor: Colors.blue, // Background color of the button
             ),
           child: icon,
           ),

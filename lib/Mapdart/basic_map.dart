@@ -86,6 +86,7 @@ class _BasicMapState extends State<BasicMap> {
         String name = stations[index].name;
         String addrs = stations[index].address;
         int bikes = stations[index].bikes;
+        List<dynamic> predicted_num_bike = stations[index].predicted_num_bike;
         showModalBottomSheet(
             context: context,
             builder: (context) { 
@@ -96,6 +97,7 @@ class _BasicMapState extends State<BasicMap> {
                   name: name, 
                   addrs: addrs, 
                   bikes: bikes,
+                  predicted_num_bike: predicted_num_bike,
                   children: [
                 StationBubble(
                     onPressed: (){
@@ -279,6 +281,7 @@ class _BasicMapState extends State<BasicMap> {
                   double.parse(longitudeController.text),
                 ),
                 bikes: int.parse(bikesController.text),
+                predicted_num_bike: []
               );
               
               // Send POST request to add the new station
