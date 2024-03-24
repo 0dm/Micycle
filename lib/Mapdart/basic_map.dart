@@ -7,6 +7,7 @@ import 'location_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import '../widgets/station_bubble.dart';
 
 class Station{
     String name;
@@ -90,72 +91,22 @@ class BottomSheet extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment
                   .spaceBetween, // To prevent the Row from occupying the entire horizontal space
               children: [
-                Container(
-                  width: 80, // Diameter of the circle
-                  height: 80, // Diameter of the circle
-                  margin: EdgeInsets.only(right: 8), // Spacing between buttons
-                  decoration: BoxDecoration(
-                    color: Colors.blue, // Color of the circle
-                    shape: BoxShape.circle,
+                StationBubble(
+                    onPressed: (){
+                      Uri _url = Uri.parse( 'https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey'); launchUrl(_url);
+                      }, 
+                    icon: Icon(Icons.directions)
                   ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Action when the button is pressed
-                      Uri _url = Uri.parse(
-                          'https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey');
-                      launchUrl(_url);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: CircleBorder(),
-                      primary: Colors.blue, // Background color of the button
-                    ),
-                    child: Icon(Icons.directions),
-                  ),
-                ),
                 Row(
                   children: [
-                    Container(
-                      width: 80, // Diameter of the circle
-                      height: 80, // Diameter of the circle
-                      margin:
-                          EdgeInsets.only(right: 8), // Spacing between buttons
-                      decoration: BoxDecoration(
-                        color: Colors.blue, // Color of the circle
-                        shape: BoxShape.circle,
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () {
-                            _onEditStationPressed(index + 1);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          shape: CircleBorder(),
-                          primary:
-                              Colors.blue, // Background color of the button
-                        ),
-                        child: Icon(Icons.edit),
-                      ),
-                    ),
-                    Container(
-                      width: 80, // Diameter of the circle
-                      height: 80, // Diameter of the circle
-                      margin:
-                          EdgeInsets.only(right: 8), // Spacing between buttons
-                      decoration: BoxDecoration(
-                        color: Colors.blue, // Color of the circle
-                        shape: BoxShape.circle,
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _onDeleteStationPressed(index + 1);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          shape: CircleBorder(),
-                          primary:
-                              Colors.blue, // Background color of the button
-                        ),
-                        child: Icon(Icons.delete),
-                      ),
-                    ),
+                  StationBubble(
+                    onPressed: (){_onEditStationPressed(index + 1);}, 
+                    icon: Icon(Icons.edit)
+                  ),
+                  StationBubble(
+                    onPressed: (){_onDeleteStationPressed(index + 1);}, 
+                    icon: Icon(Icons.delete)
+                  ),
                   ],
                 ),
               ],
@@ -419,25 +370,11 @@ class _BasicMapState extends State<BasicMap> {
                     alignment: Alignment.topLeft,   
                     child: Padding(                            
                         padding: EdgeInsets.all(10.0),
-                        child: Container(
-                            width: 80, // Diameter of the circle
-                            height: 80, // Diameter of the circle
-                            margin: EdgeInsets.only(right: 8), // Spacing between buttons
-                            decoration: BoxDecoration(
-                                color: Colors.blue, // Color of the circle
-                                shape: BoxShape.circle,
-                            ),
-                            child: ElevatedButton(
-                                onPressed: () {
-                                    fetchStation();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    shape: CircleBorder(),
-                                    backgroundColor: Colors.blue, // Background color of the button
-                                ),
-                            child: Icon(Icons.refresh)
-                            )
-                        )
+                        child: FloatingActionButton(
+                          onPressed:  fetchStation,
+                          child:  Icon(Icons.refresh),
+                          tooltip: "Refresh Stations",
+                        ),
                     ),
                 ),
 
