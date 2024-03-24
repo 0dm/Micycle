@@ -34,87 +34,188 @@ class Station{
 }
 
 class BottomSheet extends StatelessWidget {
+  const BottomSheet(
+      {required this.sidex,
+      required this.sidey,
+      required this.name,
+      required this.addrs,
+      required this.bikes,
+      required this.index,
+      });
+
   final double sidex;
   final double sidey;
   final String name;
   final String addrs;
   final int bikes;
+  final int index;
 
-  BottomSheet(
-      {required this.sidex,
-      required this.sidey,
-      required this.name,
-      required this.addrs,
-      required this.bikes}
-  );
-
-    @override
-    Widget build(BuildContext context) {
-        return Container(
-            constraints: BoxConstraints.expand(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.75
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints.expand(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height * 0.75),
+      padding: EdgeInsets.all(16),
+      child: Column(
+        children: <Widget>[
+          Image.asset(
+            'assets/images/placeHolderBike.jpeg', // Replace with your image asset
+            width: MediaQuery.of(context)
+                .size
+                .width, // Set image width to full screen width
+            height: MediaQuery.of(context).size.height *
+                0.3, // Adjust the size accordingly
+            fit: BoxFit
+                .cover, // Cover the entire width while keeping aspect ratio
+          ),
+          SizedBox(height: 16),
+          Text(
+            '$name',
+            style: TextStyle(fontSize: 30), // Adjust the style as needed
+          ),
+          Text(
+            '$addrs',
+            style: TextStyle(fontSize: 16), // Adjust the style as needed
+          ),
+          Text(
+            'Remaining Bike: $bikes/10',
+            style: TextStyle(fontSize: 16), // Adjust the style as needed
+          ),
+          SizedBox(height: 16),
+          Align(
+            alignment:
+                Alignment.centerLeft, // Aligning only this widget to the left
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment
+                  .spaceBetween, // To prevent the Row from occupying the entire horizontal space
+              children: [
+                Container(
+                  width: 80, // Diameter of the circle
+                  height: 80, // Diameter of the circle
+                  margin: EdgeInsets.only(right: 8), // Spacing between buttons
+                  decoration: BoxDecoration(
+                    color: Colors.blue, // Color of the circle
+                    shape: BoxShape.circle,
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Action when the button is pressed
+                      Uri _url = Uri.parse(
+                          'https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey');
+                      launchUrl(_url);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: CircleBorder(),
+                      primary: Colors.blue, // Background color of the button
+                    ),
+                    child: Icon(Icons.directions),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 80, // Diameter of the circle
+                      height: 80, // Diameter of the circle
+                      margin:
+                          EdgeInsets.only(right: 8), // Spacing between buttons
+                      decoration: BoxDecoration(
+                        color: Colors.blue, // Color of the circle
+                        shape: BoxShape.circle,
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                            _onEditStationPressed(index + 1);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: CircleBorder(),
+                          primary:
+                              Colors.blue, // Background color of the button
+                        ),
+                        child: Icon(Icons.edit),
+                      ),
+                    ),
+                    Container(
+                      width: 80, // Diameter of the circle
+                      height: 80, // Diameter of the circle
+                      margin:
+                          EdgeInsets.only(right: 8), // Spacing between buttons
+                      decoration: BoxDecoration(
+                        color: Colors.blue, // Color of the circle
+                        shape: BoxShape.circle,
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _onDeleteStationPressed(index + 1);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: CircleBorder(),
+                          primary:
+                              Colors.blue, // Background color of the button
+                        ),
+                        child: Icon(Icons.delete),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            padding: EdgeInsets.all(16),
-            child: Column(
-                children: <Widget>[
-                    Image.asset(
-                        'assets/images/placeHolderBike.jpeg', // Replace with your image asset
-                        width: MediaQuery.of(context).size.width, // Set image width to full screen width
-                        height: MediaQuery.of(context).size.height * 0.3, // Adjust the size accordingly
-                        fit: BoxFit.cover, // Cover the entire width while keeping aspect ratio
-                    ),
-                    SizedBox(height: 16),
-                    
-                    Text(
-                        '$name',
-                        style: TextStyle(fontSize: 30), // Adjust the style as needed
-                    ),
-                    Text(
-                        '$addrs',
-                        style: TextStyle(fontSize: 16), // Adjust the style as needed
-                    ),
+          )
+        ],
+      ),
+    );
+  }
+  
+  void _onEditStationPressed(int index) async {
+    var response;
+    var url = Uri.http('localhost:8000', 'stations/$index');
 
-                    Text(
-                        'Remaining Bike: $bikes/10',
-                        style: TextStyle(fontSize: 16), // Adjust the style as needed
-                    ),
-
-                    SizedBox(height: 16),
-                    Align(
-                    	alignment: Alignment.centerLeft, // Aligning only this widget to the left
-                    	child: Row(
-                    	    mainAxisSize: MainAxisSize.min, // To prevent the Row from occupying the entire horizontal space
-                    	    children: [ 
-                        		Container(
-                        		    width: 80, // Diameter of the circle
-                        		    height: 80, // Diameter of the circle
-                        		    margin: EdgeInsets.only(right: 8), // Spacing between buttons
-                        		    decoration: BoxDecoration(
-                            			color: Colors.blue, // Color of the circle
-                            			shape: BoxShape.circle,
-                        		    ),
-                        		    child: ElevatedButton(
-                            			onPressed: () {
-                            			    // Action when the button is pressed
-                                            Uri _url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey');
-                                            launchUrl(_url);
-                            			    
-                            			},
-                            			style: ElevatedButton.styleFrom(
-                            			    shape: CircleBorder(),
-                            			    backgroundColor: Colors.blue, // Background color of the button
-                            			),
-                            			child: Icon(Icons.directions),
-                        		    ),
-                        		),
-                            ],
-                    	),
-                	)
-                ],
-            ),
-        );
+    try {
+      response = await http.get(url);
+    } catch (e) {
+      print("Error123");
+      print(e);
+      return;
     }
+    print(index);
+    print(response.body);
+
+    Station station =  Station.fromJson(json.decode(response.body));
+
+    TextEditingController nameController = TextEditingController(text: station.name);
+    TextEditingController addressController = TextEditingController(text: station.address);
+    TextEditingController latitudeController = TextEditingController(text: station.location.latitude.toString());
+    TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
+    TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
+
+   //implement the editing here
+   //stations.put
+  }
+
+  //make sure to raise proper errors here
+  void _onDeleteStationPressed(int index) async {
+    var response;
+    var url = Uri.http('localhost:8000', 'stations/');
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: json.encode( {"station_id": index}),
+      );
+
+      if(response == 200){
+        print("works");
+      }else{
+        print("did not work");
+      }
+    }catch (error) {
+      print('Failed to delete station. Error: $error');
+    }
+    
+  }
 }
 
 class BasicMap extends StatefulWidget {
@@ -186,6 +287,7 @@ class _BasicMapState extends State<BasicMap> {
   }
 
     void _showBottomSheet(int index) {
+        // int id = stations[index].id;
         double sidex = stations[index].location.latitude;
         double sidey = stations[index].location.longitude;
         String name = stations[index].name;
@@ -194,7 +296,7 @@ class _BasicMapState extends State<BasicMap> {
         showModalBottomSheet(
             context: context,
             builder: (context) { 
-                return BottomSheet(sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes);
+                return BottomSheet(index: index, sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes);
             },
             isScrollControlled: true, // Set to true so the BottomSheet can take full screen height if needed
         );
@@ -461,6 +563,7 @@ class _BasicMapState extends State<BasicMap> {
     },
   );
 }
+
   void promptUserForLocation() {
     final snackBar = SnackBar(
       content: Text('Tap on the map to select the location for the new station.'),
