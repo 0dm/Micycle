@@ -1,3 +1,4 @@
+import 'package:Micycle/widgets/station_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -124,7 +125,6 @@ class BottomSheet extends StatelessWidget {
     try {
       response = await http.get(url);
     } catch (e) {
-      print("Error123");
       print(e);
       return;
     }
@@ -139,7 +139,23 @@ class BottomSheet extends StatelessWidget {
     TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
     TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
 
-   //implement the editing here
+    // showDialog(
+    //   context: context,
+    //   builder: (BuildContext context) {
+    //     return StationForm(
+    //       text: "Add a New Station", 
+    //       nameController: nameController, 
+    //       addressController: addressController, 
+    //       latitudeController: latitudeController, 
+    //       longitudeController: longitudeController, 
+    //       bikesController: bikesController, 
+    //       onPressed: () async 
+    //       {
+    //            //stations.put
+    //       }
+    //     );
+    //   }
+    // );
    //stations.put
   }
 
@@ -147,7 +163,6 @@ class BottomSheet extends StatelessWidget {
   void _onDeleteStationPressed(int index) async {
     var response;
     var url = Uri.http('localhost:8000', 'stations/');
-
     try {
       final response = await http.delete(
         url,
@@ -394,47 +409,14 @@ class _BasicMapState extends State<BasicMap> {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text("Add New Station"),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              TextFormField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Station Name'),
-              ),
-              TextFormField(
-                controller: addressController,
-                decoration: InputDecoration(labelText: 'Address'),
-              ),
-              TextFormField(
-                controller: latitudeController,
-                decoration: InputDecoration(labelText: 'Latitude'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-              ),
-              TextFormField(
-                controller: longitudeController,
-                decoration: InputDecoration(labelText: 'Longitude'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-              ),
-              TextFormField(
-                controller: bikesController,
-                decoration: InputDecoration(labelText: 'Number of Bikes'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: Text('Add'),
-            onPressed: () async {
+      return StationForm(
+        text: "Add a New Station", 
+        nameController: nameController, 
+        addressController: addressController, 
+        latitudeController: latitudeController, 
+        longitudeController: longitudeController, 
+        bikesController: bikesController, 
+        onPressed: () async {
               var newStation = Station(
                 name: nameController.text,
                 address: addressController.text,
@@ -490,13 +472,10 @@ class _BasicMapState extends State<BasicMap> {
                   ),
                 );
               });
-
               // Close the dialog
               Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
+          }
+        );
     },
   );
 }
