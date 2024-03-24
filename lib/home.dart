@@ -1,15 +1,13 @@
-import 'dart:convert';
-import 'dart:io' show Platform;
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart'; // Import this package
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'Mapdart/basic_map.dart';
-import 'package:http/http.dart' as http;
-import 'qrscanner.dart';
-import 'chat.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:flutter/foundation.dart'; // Import this package
+import 'package:permission_handler/permission_handler.dart';
+
+import 'Mapdart/basic_map.dart';
+import 'chat.dart';
+import 'profile.dart';
+import 'qrscanner.dart';
 
 void main() {
   runApp(const App());
@@ -45,8 +43,8 @@ class _HomeState extends State<Home> {
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
     QRScannerPage(), // Fallback for other platforms
-    const BikePage(),
     Chat(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -73,12 +71,12 @@ class _HomeState extends State<Home> {
             label: 'QR Scanner',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.directions_bike),
-            label: 'Bike',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble),
             label: 'Chat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu),
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -194,14 +192,5 @@ class _QRScanPageState extends State<QRScanPage> {
   void dispose() {
     cameraController?.dispose();
     super.dispose();
-  }
-}
-
-class BikePage extends StatelessWidget {
-  const BikePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Bike Page'));
   }
 }
