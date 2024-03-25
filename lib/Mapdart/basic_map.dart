@@ -8,8 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../home.dart';
 import '../env.dart';
 import 'location_service.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
 import 'station_bubble.dart';
 import 'station_form.dart';
@@ -289,7 +287,7 @@ class _BasicMapState extends State<BasicMap> {
               );
               
               // Send POST request to add the new station
-              final Uri apiUrl = Uri.parse('http://localhost:8000/stations');
+              final Uri apiUrl = Uri.parse('${Env.STATIONS_SERVER}/stations');
               try {
                 final response = await http.post(
                   apiUrl,
@@ -343,7 +341,7 @@ class _BasicMapState extends State<BasicMap> {
 
   void _onEditStationPressed(int index) async {
     var response;
-    var url = Uri.http('localhost:8000', 'stations/$index');
+    var url = Uri.http('172.174.183.117:8000', 'stations/$index');
 
     try {
       response = await http.get(url);
@@ -384,7 +382,7 @@ class _BasicMapState extends State<BasicMap> {
   //make sure to raise proper errors here
   void _onDeleteStationPressed(int index) async {
     var response;
-    var url = Uri.http('localhost:8000', 'stations/');
+    var url = Uri.http('172.174.183.117:8000', 'stations/');
     try {
       final response = await http.delete(
         url,
@@ -416,5 +414,4 @@ class _BasicMapState extends State<BasicMap> {
     });
   }
 }
-
 

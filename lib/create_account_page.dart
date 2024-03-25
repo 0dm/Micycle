@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'env.dart';
 
 class CreateAccountPage extends StatefulWidget {
   @override
@@ -37,7 +38,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       );
       return; // Stop the function from proceeding further
     }
-  var url = 'http://localhost:5000/create_account'; // Adjust to your actual server address
+  var url = Env.ACCOUNT_SERVER + '/create_account';
   var response = await http.post(
     Uri.parse(url),
     headers: {"Content-Type": "application/json"},
@@ -54,7 +55,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     print('Response body: ${response.body}');
     var responseData = json.decode(response.body);
     var checkoutUrl = responseData['url'];  // Use 'id' instead of 'checkoutSessionId'
-    html.window.location.href = checkoutUrl;
+    launch(checkoutUrl); // Launch the Stripe Checkout page
   } else if (response.statusCode == 409) {
     // Email already exists
     showDialog(
