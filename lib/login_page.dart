@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> login() async {
-    var url = Env.ACCOUNT_SERVER + '/login';
+    var url = "${Env.ACCOUNT_SERVER}/login";
     var response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
