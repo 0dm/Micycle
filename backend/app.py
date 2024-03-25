@@ -145,6 +145,28 @@ def update_password():
         print("User not found for email:", user_email)  # Debugging print
         return jsonify({"error": "User not found"}), 404
 
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    data = request.get_json()
+    user_email = data.get('email')
+    password = data.get('password')  # Assuming password verification is required
+
+    print("Received data:", data)  # Debugging print
+
+    user = User.query.filter_by(email=user_email).first()
+
+    if user:
+        # Password matches, proceed with account deletion
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"message": "Account deleted successfully"}), 200
+    elif user:
+        # Password does not match
+        return jsonify({"error": "Password verification failed"}), 403
+    else:
+        # User not found
+        return jsonify({"error": "User not found"}), 404
+
 
 
 if __name__ == "__main__":
