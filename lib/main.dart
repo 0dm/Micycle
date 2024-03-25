@@ -24,7 +24,7 @@ class Main extends StatelessWidget {
       ),
       home: Home(),
       routes: {
-        '/login': (context) => LoginPage(),
+        '/login': (context) => Home(),
         // Define additional routes as needed
       },
     );

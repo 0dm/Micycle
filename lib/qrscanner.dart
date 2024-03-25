@@ -6,8 +6,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:typed_data';
 import 'scanner.dart';
+import 'home.dart';
 
 final Uri _url = Uri.parse('web/scanner.html');
+
 
 
 class QRScannerPage extends StatefulWidget {
@@ -57,15 +59,47 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   void _launchQRScanner() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Scanner()),
-    );
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => Scanner()),
+  );
+
+  if (result != null) {
+    print('Scanned QR Code: $result');
     
-    if (result != null) {
-      print('Scanned QR Code: $result');
+    // Construct the data to be sent in the POST request
+    Map<String, String> postData = {
+      'message': result, 
+      'email': '123@gmail.com'
+    };
+
+    print(jsonEncode(postData));
+
+    // Make the POST request to the server
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:8000/qr'), 
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(postData),
+    );
+
+    // Handle the response
+    print("sent post");
+    if (response.statusCode == 200) {
+      print('POST Request Successful');
+      print(response.body);
+      setState(() {
+          stationInfo = 'Rented a bike';
+          _startTimer();
+        });
+        return;
+
+    } else {
+      print('Failed to make POST request. Status code: ${response.statusCode}, ${response.body}');
     }
   }
+}
 
   void _getStationInfo() async {
     final response = await http.get(Uri.parse('http://127.0.0.1:5001/get_endpoint'));

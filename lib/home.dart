@@ -10,6 +10,9 @@ import 'qrscanner.dart';
 import 'chat.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter/foundation.dart'; // Import this package
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 void main() {
   runApp(const App());
