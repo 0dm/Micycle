@@ -42,7 +42,6 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
-
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
     QRScannerPage(), // Fallback for other platforms

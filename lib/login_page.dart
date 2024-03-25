@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   Future getCredentialsName(String email) async {
     return http
         .get(
-      Uri.parse("${Env.ACCOUNT_SERVER}/get_user_info/$email'"),
+      Uri.parse("${Env.ACCOUNT_SERVER}/get_user_info/$email"),
     )
         .then((response) {
       if (response.statusCode == 200) {
@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       if (displayCredentials != null) {
         // Store the user's display name in the app's state
         setState(() {
-          Home.displayName = displayCredentials['displayName'];
+          Home.displayName = displayCredentials['display_name'];
           Home.email = displayCredentials['email'];
           Home.isAdmin = displayCredentials['is_admin'];
         });
