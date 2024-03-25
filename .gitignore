@@ -40,3 +40,9 @@ loginpage/ios/Runner/GeneratedPluginRegistrant.m
 # macOS specific
 loginpage/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
 loginpage/macos/Flutter/ephemeral/flutter_export_environment.sh
+
+*.pcm
+.DS_Store
+.flutter-plugins-dependencies
+.flutter-plugins
+*.pyc

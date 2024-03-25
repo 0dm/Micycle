@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Encoder</title>
+    <script src="qrious.js"></script>
+</head>
+<body>
+    <div id="qrcode"></div>
+    <br>
+    <img id="qrcode-image" alt="QR Code Image">
+
+    <script>
+        function generateQRCode(text) {
+     
+            var qr = new QRious({
+                element: document.getElementById('qrcode'),
+                value: text,
+                size: 300, 
+                level: 'H'
+            });
+
+            
+            var qrImage = document.getElementById('qrcode-image');
+            qrImage.src = qr.toDataURL();
+        }
+        generateQRCode('(1, 2)');
+    </script>
+</body>
+</html>

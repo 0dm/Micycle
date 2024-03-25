@@ -6,8 +6,9 @@ from database import engine, Sessionlocal
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-
-
+from datetime import datetime, timedelta
+from sqlalchemy import func
+from predictor import get_average_num_bikes_per_hour
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = Sessionlocal()
@@ -36,7 +37,13 @@ async def lifespan(app: FastAPI):
             )
             db.add(station_model)
             db.commit()
+
+        # Update the predicted number of bikes for each station
+        for station_model in db.query(models.Stations).all():
+            station_model.predicted_num_bike = get_average_num_bikes_per_hour(datetime.now(), station_model.id)
+            db.commit()
         yield()
+        print(f"Found {num_stations} stations in the database. station populated.")
     else:
         print(f"Found {num_stations} stations in the database. Skipping population.")
         yield()
@@ -69,6 +76,7 @@ class Station(BaseModel):
     x: float
     y: float
     num_bike: int
+    predicted_num_bike: int
 
 @app.get("/stations")
 def read_api(db: Session = Depends(get_db)):
@@ -96,7 +104,7 @@ def create_station(station: Station, db: Session = Depends(get_db)):
     Returns:
         Station: The created station object.
     """
-    station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y, num_bike=station.num_bike)
+    station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y, num_bike=station.num_bike,predicted_num_bike=station.predicted_num_bike)
     db.add(station_model)
     db.commit()
     return station
@@ -143,6 +151,81 @@ def delete_station(station_id:int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Station ID {station_id}: not found")
     db.query(models.Stations).filter(models.Stations.id == station_id).delete()
     db.commit()
+
+@app.post("/qr")
+def qr(input:str, db: Session = Depends(get_db)):
+    """
+    Manages the data input from the QR scanner 
+    Comes in json {body: "MESSASGE", user: "EMAIL"}
+    """
+    message = input.get('body', '')
+    user_email = input.get('user', '')
+
+    # get the user from login servern
+    user_info_response = requests.get(f"http://127.0.0.1:5000/get_user_info/{user_email}")
+    if user_info_response.status_code != 200:
+        raise HTTPException(status_code=400, detail="User not found or unauthorized")
+
+    user_info = user_info_response.json()
+    is_admin = user_info.get('is_admin', False)
+
+    # break down message into bike and station number 
+    if message.startswith("NEW") and is_admin:
+        # get bike_id and station_id
+        try:
+            _, bike_id, station_id = message.split(",")
+            bike_id = int(bike_id.strip())
+            station_id = int(station_id.strip())
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid message format")
+
+        # add new bike to bike database
+        db.execute(models.Bikes.__table__.insert().values(bike_id=bike_id, station_id=station_id))
+        db.commit()
+        return {"message": "Bike added successfully"}
+
+    elif message.startswith("{") and "," in message:
+        try:
+            data = message.strip("{}").split(",")
+            bike_id, start_station_id, user_id = map(int, data)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid message format")
+
+        # return a rental, mark endtime
+        existing_rent = db.query(models.Rents).filter(
+            models.Rents.bike_id == bike_id,
+            models.Rents.end_time == None
+        ).first()
+
+        if existing_rent:
+            # record return time 
+            existing_rent.end_id = start_station_id
+            existing_rent.end_time = datetime.now()
+
+            # Update the num_bike attribute in the Rents table based on start_id
+            station = db.query(models.Stations).filter(models.Stations.id == existing_rent.start_id).first()
+            existing_rent.num_bike = station.num_bike + 1
+
+            # Update the num_bike attribute in the Stations table for the returned bike
+            db.query(models.Stations).filter(models.Stations.id == start_station_id).update({models.Stations.num_bike: models.Stations.num_bike + 1})
+            db.commit()
+            return {"message": "Rent updated successfully"}
+
+        else:
+            # take out a bike
+            rent_data = {
+                "bike_id": bike_id,
+                "start_station_id": start_station_id,
+                "user_id": user_id,
+                "start_time": datetime.now()  
+            }
+            db.execute(models.Rents.__table__.insert().values(**rent_data))
+            db.commit()
+            return {"message": "Rent added successfully"}
+
+    else:
+        raise HTTPException(status_code=400, detail="Invalid message format")
+ 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
