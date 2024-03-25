@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -36,81 +37,84 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       );
       return; // Stop the function from proceeding further
     }
+  var url = 'http://localhost:5000/create_account'; // Adjust to your actual server address
+  var response = await http.post(
+    Uri.parse(url),
+    headers: {"Content-Type": "application/json"},
+    body: json.encode({
+      'email': _emailController.text,
+      'password': _passwordController.text,
+      'displayName': _displayNameController.text, // Make sure to add this line
+      'isAdmin': _isAdmin, // Assuming you have a boolean value for isAdmin
+      'adminCode': _isAdmin ? _adminCodeController.text : '', // Include adminCode conditionally based on isAdmin
+    }),
+  );
 
-    var url =
-        'http://localhost:5000/create_account'; // Adjust to your actual server address
-    var response = await http.post(
-      Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({
-        'email': _emailController.text,
-        'password': _passwordController.text,
-        'displayName':
-            _displayNameController.text, // Make sure to add this line
-        'isAdmin': _isAdmin, // Assuming you have a boolean value for isAdmin
-        'adminCode': _isAdmin
-            ? _adminCodeController.text
-            : '', // Include adminCode conditionally based on isAdmin
-      }),
+  if (response.statusCode == 200) {
+    print('Response body: ${response.body}');
+    var responseData = json.decode(response.body);
+    var checkoutUrl = responseData['url'];  // Use 'id' instead of 'checkoutSessionId'
+    html.window.location.href = checkoutUrl;
+  } else if (response.statusCode == 409) {
+    // Email already exists
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Error'),
+        content: Text('This email address already has an account.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: Text('Try Again'),
+          ),
+        ],
+      ),
     );
-
-    if (response.statusCode == 201) {
-      // Account created successfully
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Success'),
-          content: Text('Account created successfully'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                Navigator.of(context)
-                    .pop(); // pop the CreateAccountPage to go back to the LoginPage
-              },
-              child: Text('Okay'),
-            ),
-          ],
-        ),
-      );
-    } else if (response.statusCode == 409) {
-      // Email already exists
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Error'),
-          content: Text('This email address already has an account.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text('Try Again'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Handle other errors
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Failed to create account. Please try again.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text('Try Again'),
-            ),
-          ],
-        ),
-      );
-    }
+  } if (response.statusCode == 201) {
+  // Account created successfully
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text('Success'),
+      content: Text('Account created successfully, please log in.'),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            // This assumes you have a named route set up for your login page
+            // Replace '/loginPage' with the actual route name for your login page
+            Navigator.of(ctx).pop(); // Close the dialog
+            Navigator.of(context).pushReplacementNamed('/login');
+            },
+          child: Text('Login'),
+          ),
+        ],
+      ),
+    );
   }
+  else {
+    // Handle other errors
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Error'),
+        content: Text('Failed to create account. Please try again.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-  @override
+
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
