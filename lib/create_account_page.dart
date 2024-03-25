@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -50,24 +51,11 @@ Future<void> createAccount() async {
     }),
   );
 
-  if (response.statusCode == 201) {
-    // Account created successfully
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Success'),
-        content: Text('Account created successfully'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pop(); // pop the CreateAccountPage to go back to the LoginPage
-            },
-            child: Text('Okay'),
-          ),
-        ],
-      ),
-    );
+  if (response.statusCode == 200) {
+    print('Response body: ${response.body}');
+    var responseData = json.decode(response.body);
+    var checkoutUrl = responseData['url'];  // Use 'id' instead of 'checkoutSessionId'
+    html.window.location.href = checkoutUrl;
   } else if (response.statusCode == 409) {
     // Email already exists
     showDialog(
@@ -85,7 +73,28 @@ Future<void> createAccount() async {
         ],
       ),
     );
-  } else {
+  } if (response.statusCode == 201) {
+  // Account created successfully
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text('Success'),
+      content: Text('Account created successfully, please log in.'),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            // This assumes you have a named route set up for your login page
+            // Replace '/loginPage' with the actual route name for your login page
+            Navigator.of(ctx).pop(); // Close the dialog
+            Navigator.of(context).pushReplacementNamed('/login');
+            },
+          child: Text('Login'),
+          ),
+        ],
+      ),
+    );
+  }
+  else {
     // Handle other errors
     showDialog(
       context: context,
