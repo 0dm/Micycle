@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:Micycle/theme/theme_provider.dart';
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
     required this.content,
     required this.isUserMessage,
     this.avatarUrl,
-    super.key,
-  });
+    Key? key,
+  }) : super(key: key);
 
   final String content;
   final bool isUserMessage;
@@ -14,6 +16,8 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Row(
       children: [
         if (avatarUrl != null)
@@ -35,9 +39,19 @@ class MessageBubble extends StatelessWidget {
               children: [
                 Text(
                   isUserMessage ? 'You' : 'Micycle',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),
                 ),
-                Text(content),
+                Text(
+                  content,
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),
+                ),
               ],
             ),
           ),

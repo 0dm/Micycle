@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:Micycle/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'home.dart';
 
@@ -79,6 +81,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Login'),
@@ -94,8 +97,10 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                     padding: EdgeInsets.all(16),
                     child: TextFormField(
+                      style: TextStyle(color:themeProvider.themeData.colorScheme.secondary,fontSize: themeProvider.fontSize),
                       controller: _emailController,
-                      decoration: InputDecoration(hintText: 'Email'),
+                      decoration: InputDecoration(hintText: 'Email'
+                      ,hintStyle: TextStyle(color: themeProvider.themeData.colorScheme.primary),),
                       validator: (value) {
                         // Regular expression for validating email
                         final emailRegex = RegExp(
@@ -112,9 +117,10 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                     padding: EdgeInsets.all(16),
                     child: TextFormField(
+                      style: TextStyle(color:themeProvider.themeData.colorScheme.secondary,fontSize: themeProvider.fontSize),
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(hintText: 'Password'),
+                      decoration: InputDecoration(hintText: 'Password',hintStyle: TextStyle(color: themeProvider.themeData.colorScheme.primary),),
                       validator: (value) {
                         if (value == null ||
                             value.isEmpty ||
@@ -130,7 +136,10 @@ class _LoginPageState extends State<LoginPage> {
                       login();
                     }
                   },
-                  child: Text('Login'),
+                  child: Text('Login',style: TextStyle(
+                      color: themeProvider.themeData.colorScheme.background,
+                      fontSize: themeProvider.fontSize,
+                    ),),
                 ),
                 TextButton(
                   onPressed: () {
@@ -140,7 +149,11 @@ class _LoginPageState extends State<LoginPage> {
                           builder: (context) => CreateAccountPage()),
                     );
                   },
-                  child: Text('Create Account'),
+                  child: Text('Create Account',
+                    style: TextStyle(
+                      color: themeProvider.themeData.colorScheme.secondary,
+                      fontSize: themeProvider.fontSize,
+                    ),),
                 ),
               ],
             ),

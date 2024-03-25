@@ -1,3 +1,5 @@
+import 'package:Micycle/theme/theme_provider.dart';
+import 'package:provider/provider.dart';
 import 'api/chat_api.dart';
 import 'models/chat_message.dart';
 import 'widgets/message_bubble.dart';
@@ -21,10 +23,11 @@ class _ChatState extends State<Chat> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     var userAvatar = 'https://ui-avatars.com/api/?name=${Home.displayName}';
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat'),
+        title: Text('Chat', style: TextStyle(color:themeProvider.themeData.colorScheme.secondary)),
         automaticallyImplyLeading: false,
       ),
       body: Column(
