@@ -16,6 +16,7 @@ class AccountDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Account Details', style: TextStyle(
           color: themeProvider.themeData.colorScheme.secondary,
+          fontSize: themeProvider.fontSize,
         )),
       ),
       body: Padding(
@@ -25,17 +26,21 @@ class AccountDetailsPage extends StatelessWidget {
             ListTile(
               title: Text('Email', style: TextStyle(
           color: themeProvider.themeData.colorScheme.secondary,
+          fontSize: themeProvider.fontSize,
         )),
               subtitle: Text(Home.userEmail ?? 'N/A', style: TextStyle(
-          color: themeProvider.themeData.colorScheme.secondary,
+          color: themeProvider.themeData.colorScheme.primary,
+          fontSize: themeProvider.fontSize,
         )), // Accessing static variable
             ),
             ListTile(
               title: Text('Display Name', style: TextStyle(
           color: themeProvider.themeData.colorScheme.secondary,
+          fontSize: themeProvider.fontSize,
         )),
               subtitle: Text(Home.displayName ?? 'N/A', style: TextStyle(
-          color: themeProvider.themeData.colorScheme.secondary,
+          color: themeProvider.themeData.colorScheme.primary,
+          fontSize: themeProvider.fontSize,
         )), // Accessing static variable
             ),
           ],

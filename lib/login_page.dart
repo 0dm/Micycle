@@ -81,7 +81,8 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Login', style: TextStyle(
-          color: themeProvider.themeData.colorScheme.primary,
+          color: themeProvider.themeData.colorScheme.secondary,
+          fontSize: themeProvider.fontSize,
         )),
         automaticallyImplyLeading: false,
       ),
@@ -118,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Password',
-                      hintStyle: TextStyle(color: themeProvider.themeData.colorScheme.secondary),
+                      hintStyle: TextStyle(color: themeProvider.themeData.colorScheme.secondary,fontSize: themeProvider.fontSize),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty || value.length < 6) {
@@ -135,7 +136,8 @@ class _LoginPageState extends State<LoginPage> {
                     }
                   },
                   child: Text('Login', style: TextStyle(
-                    color: themeProvider.themeData.colorScheme.onPrimary,
+                    color: themeProvider.themeData.colorScheme.primary,
+                    fontSize: themeProvider.fontSize,
                   )),
                 ),
                 TextButton(
@@ -146,7 +148,8 @@ class _LoginPageState extends State<LoginPage> {
                     );
                   },
                   child: Text('Create Account', style: TextStyle(
-                    color: themeProvider.themeData.colorScheme.secondary,
+                    color: themeProvider.themeData.colorScheme.primary,
+                    fontSize: themeProvider.fontSize,
                   )),
                 ),
               ],

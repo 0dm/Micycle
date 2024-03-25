@@ -27,28 +27,48 @@ class _SettingsPageState extends State<SettingsPage> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text('Settings',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           ListTile(
-            title: const Text('Change Username'),
+            title: Text('Change Username',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: const Icon(Icons.chevron_right),
             onTap: _changeUsername, // Pass context here
           ),
           ListTile(
-            title: const Text('Change Email'),
+            title: Text('Change Email',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: const Icon(Icons.chevron_right),
             onTap: _changeEmail,
           ),
           ListTile(
-            title: const Text('Change Password'),
+            title:Text('Change Password',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: const Icon(Icons.chevron_right),
             onTap: _changePassword,
           ),
           ListTile(
-            title: const Text('Font Size'),
+            title: Text('Font Size',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: SizedBox(
               width: 200,
               child: Slider(
@@ -68,7 +88,11 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: const Text('Color Theme'),
+            title: Text('Color Theme',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: Switch(
                   value: _darkTheme,
                   activeColor: themeProvider.themeData.colorScheme.primary,
