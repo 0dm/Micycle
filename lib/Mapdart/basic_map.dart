@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../home.dart';
+import '../env.dart';
 import 'location_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -155,7 +156,7 @@ class _BasicMapState extends State<BasicMap> {
     });
 
     var response;
-    var url = Uri.http('localhost:8000', 'stations');
+    var url = Uri.http(Env.STATIONS_SERVER, 'stations');
 
     try {
       response = await http.get(url);

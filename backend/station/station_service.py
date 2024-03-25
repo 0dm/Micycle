@@ -1,7 +1,9 @@
+import datetime
 from typing import List
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import models
+import requests
 from database import engine, Sessionlocal
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
@@ -214,4 +216,4 @@ def qr(input:str, db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

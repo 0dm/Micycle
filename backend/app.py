@@ -89,4 +89,4 @@ def get_user_info(email):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # Initialize database within an application context
-    app.run(debug=True)
+    app.run(debug=True, port=5000, host="0.0.0.0")

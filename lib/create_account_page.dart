@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'env.dart';
+
 class CreateAccountPage extends StatefulWidget {
   @override
   _CreateAccountPageState createState() => _CreateAccountPageState();
@@ -37,8 +39,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       return; // Stop the function from proceeding further
     }
 
-    var url =
-        'http://localhost:5000/create_account'; // Adjust to your actual server address
+    var url = '${Env.ACCOUNT_SERVER}/create_account';
     var response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
