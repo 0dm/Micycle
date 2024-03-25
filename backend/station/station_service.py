@@ -8,8 +8,9 @@ from database import engine, Sessionlocal
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-
-
+from datetime import datetime, timedelta
+from sqlalchemy import func
+from predictor import get_average_num_bikes_per_hour
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = Sessionlocal()
@@ -38,7 +39,13 @@ async def lifespan(app: FastAPI):
             )
             db.add(station_model)
             db.commit()
+
+        # Update the predicted number of bikes for each station
+        for station_model in db.query(models.Stations).all():
+            station_model.predicted_num_bike = get_average_num_bikes_per_hour(datetime.now(), station_model.id)
+            db.commit()
         yield()
+        print(f"Found {num_stations} stations in the database. station populated.")
     else:
         print(f"Found {num_stations} stations in the database. Skipping population.")
         yield()
@@ -71,6 +78,7 @@ class Station(BaseModel):
     x: float
     y: float
     num_bike: int
+    predicted_num_bike: int
 
 @app.get("/stations")
 def read_api(db: Session = Depends(get_db)):
@@ -98,7 +106,7 @@ def create_station(station: Station, db: Session = Depends(get_db)):
     Returns:
         Station: The created station object.
     """
-    station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y, num_bike=station.num_bike)
+    station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y, num_bike=station.num_bike,predicted_num_bike=station.predicted_num_bike)
     db.add(station_model)
     db.commit()
     return station
@@ -192,9 +200,16 @@ def qr(input:str, db: Session = Depends(get_db)):
         ).first()
 
         if existing_rent:
-            # record return time in database 
-            existing_rent.end_station_id = start_station_id
-            existing_rent.end_time = datetime.now() 
+            # record return time 
+            existing_rent.end_id = start_station_id
+            existing_rent.end_time = datetime.now()
+
+            # Update the num_bike attribute in the Rents table based on start_id
+            station = db.query(models.Stations).filter(models.Stations.id == existing_rent.start_id).first()
+            existing_rent.num_bike = station.num_bike + 1
+
+            # Update the num_bike attribute in the Stations table for the returned bike
+            db.query(models.Stations).filter(models.Stations.id == start_station_id).update({models.Stations.num_bike: models.Stations.num_bike + 1})
             db.commit()
             return {"message": "Rent updated successfully"}
 
@@ -212,8 +227,7 @@ def qr(input:str, db: Session = Depends(get_db)):
 
     else:
         raise HTTPException(status_code=400, detail="Invalid message format")
-    
-
+ 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

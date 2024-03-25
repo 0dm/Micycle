@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'home.dart';
-import 'env.dart';
 
 import 'create_account_page.dart';
+import 'home.dart';
+import 'env.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   Future getCredentialsName(String email) async {
     return http
         .get(
-      Uri.parse('${Env.ACCOUNT_SERVER}/get_user_info/$email'),
+      Uri.parse("${Env.ACCOUNT_SERVER}/get_user_info/$email'"),
     )
         .then((response) {
       if (response.statusCode == 200) {
@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
     if (response.statusCode == 200) {
       // Store the user's display name
       var displayCredentials = await getCredentialsName(_emailController.text);
-      
+
       if (displayCredentials != null) {
         // Store the user's display name in the app's state
         setState(() {

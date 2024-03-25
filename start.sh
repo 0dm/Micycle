@@ -8,6 +8,7 @@ cd 'station'
 echo 'Starting station backend...'
 uvicorn station_service:app --host 0.0.0.0 --reload
 STATION_PID=$!
+python3 predictor.py
 cd '..'
 # Save the PID of the Flask process
 FLASK_PID=$!
