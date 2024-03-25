@@ -155,7 +155,7 @@ def delete_account():
 
     user = User.query.filter_by(email=user_email).first()
 
-    if user:
+    if user and user.password == password:
         # Password matches, proceed with account deletion
         db.session.delete(user)
         db.session.commit()
