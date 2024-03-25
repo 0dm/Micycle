@@ -1,72 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Code Scanner</title>
-</head>
-<body>
-<div id="qr-reader"></div>
-<script src="jsQR.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function(event) {
-    const qrReader = document.getElementById('qr-reader');
-    const video = document.createElement('video');
-    qrReader.appendChild(video);
-    
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-    .then(function(stream) {
-        video.srcObject = stream;
-        video.setAttribute('playsinline', true);
-        video.play();
-        
-        video.addEventListener('loadedmetadata', function() {
-            requestAnimationFrame(scanQRCode);
-        });
-    })
-    .catch(function(err) {
-        console.error('Error accessing the camera.', err);
-    });
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Scanner</title>
+  </head>
+  <body>
+    <div id="qr-reader"></div>
+    <script src="jsQR.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function (event) {
+        const qrReader = document.getElementById("qr-reader");
+        const video = document.createElement("video");
+        qrReader.appendChild(video);
 
-    function scanQRCode() {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
+        navigator.mediaDevices
+          .getUserMedia({ video: { facingMode: "environment" } })
+          .then(function (stream) {
+            video.srcObject = stream;
+            video.setAttribute("playsinline", true);
+            video.play();
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            video.addEventListener("loadedmetadata", function () {
+              requestAnimationFrame(scanQRCode);
+            });
+          })
+          .catch(function (err) {
+            console.error("Error accessing the camera.", err);
+          });
 
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height);
+        function scanQRCode() {
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
 
-        if (code) {
-            console.log('QR Code detected:', code.data);
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          const imageData = context.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+          const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+          if (code) {
+            console.log("QR Code detected:", code.data);
             // Send POST request
             const qrData = code.data; // Assuming the data is in the form "(int, int)"
             const postData = { qrData: qrData };
-            fetch('http://localhost:5001/post_endpoint', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(postData)
+            fetch("http://172.174.183.117:5001/post_endpoint", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(postData),
             })
-            .then(response => {
+              .then((response) => {
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                  throw new Error("Network response was not ok");
                 }
                 // Close the page after sending the request
                 window.close();
-            })
-            .catch(error => {
-                console.error('Error sending POST request:', error);
+              })
+              .catch((error) => {
+                console.error("Error sending POST request:", error);
                 window.close();
-            });
-        }
+              });
+          }
 
-        requestAnimationFrame(scanQRCode);
-    }
-});
-</script>
-</body>
+          requestAnimationFrame(scanQRCode);
+        }
+      });
+    </script>
+  </body>
 </html>
