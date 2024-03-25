@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'create_account_page.dart';
 import 'home.dart';
 import 'theme/theme_provider.dart';
+import 'home.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -29,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> login(themeProvider) async {
+  Future<void> login() async {
     var url = 'http://localhost:5000/login';
     var response = await http.post(
       Uri.parse(url),
@@ -61,18 +62,12 @@ class _LoginPageState extends State<LoginPage> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text('Error', style: TextStyle(
-            color: themeProvider.themeData.colorScheme.secondary,
-          )),
-          content: Text(errorReason, style: TextStyle(
-            color: themeProvider.themeData.colorScheme.secondary,
-          )),
+          title: const Text('Error'),
+          content: Text(errorReason),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text('Try Again', style: TextStyle(
-                color: themeProvider.themeData.colorScheme.primary,
-              )),
+              child: const Text('Try Again'),
             ),
           ],
         ),
@@ -136,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      login(themeProvider);
+                      login();
                     }
                   },
                   child: Text('Login', style: TextStyle(

@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import 'home.dart';
 
+import 'home.dart';
+
 class AccountDetailsPage extends StatelessWidget {
   const AccountDetailsPage({Key? key}) : super(key: key);
 
@@ -42,3 +44,4 @@ class AccountDetailsPage extends StatelessWidget {
     );
   }
 }
+
