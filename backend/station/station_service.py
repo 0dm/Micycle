@@ -1,7 +1,9 @@
+import datetime
 from typing import List
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import models
+import requests
 from database import engine, Sessionlocal
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
@@ -9,6 +11,29 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from predictor import get_average_num_bikes_per_hour
+
+class QRRequest(BaseModel):
+    message: str
+    email: str
+
+class Create(BaseModel):
+    name: str
+    address: str
+    x: float
+    y: float
+    num_bike: int
+
+class Update(BaseModel):
+    id: int
+    name: str
+    address: str
+    x: float
+    y: float
+    num_bike: int
+
+class Delete(BaseModel):
+    id: int
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = Sessionlocal()
@@ -32,8 +57,8 @@ async def lifespan(app: FastAPI):
                 name=station_info[0],
                 address=station_info[1],
                 x=station_info[2],
-                y=station_info[3]
-                ,num_bike=station_info[4]
+                y=station_info[3],
+                num_bike=station_info[4]
             )
             db.add(station_model)
             db.commit()
@@ -93,7 +118,7 @@ def get_station(station_id:int,db: Session = Depends(get_db)):
     return db.query(models.Stations).filter(models.Stations.id == station_id).first()
 
 @app.post("/stations")
-def create_station(station: Station, db: Session = Depends(get_db)):
+def create_station(create: Create, db: Session = Depends(get_db)):
     """
     Create a station in the database.
 
@@ -104,13 +129,14 @@ def create_station(station: Station, db: Session = Depends(get_db)):
     Returns:
         Station: The created station object.
     """
-    station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y, num_bike=station.num_bike,predicted_num_bike=station.predicted_num_bike)
+    station_model = models.Stations(name=create.name, address=create.address, x=create.x, y=create.y, num_bike=create.num_bike)
+    station_model.predicted_num_bike = get_average_num_bikes_per_hour(datetime.now(), station_model.id)
     db.add(station_model)
     db.commit()
-    return station
+    return create
 
 @app.put("/stations")
-def update_station(station_id:int, station: Station, db: Session = Depends(get_db)):
+def update_station(update: Update, db: Session = Depends(get_db)):
     """
     Update a station in the database with the given station_id. 
     Parameters:
@@ -122,20 +148,20 @@ def update_station(station_id:int, station: Station, db: Session = Depends(get_d
     Raises:
     - HTTPException - If the station with the given ID is not found in the database.
     """
-    station_model = db.query(models.Stations).filter(models.Stations.id == station_id).first()
+    station_model = db.query(models.Stations).filter(models.Stations.id == update.id).first()
     if not station_model:
         raise HTTPException(status_code=404, detail="Station not found")
-    station_model.name = station.name
-    station_model.address = station.address
-    station_model.x = station.x
-    station_model.y = station.y
+    station_model.name = update.name
+    station_model.address = update.address
+    station_model.x = update.x
+    station_model.y = update.y
 
     db.add(station_model)
     db.commit()
-    return station
+    return update
 
 @app.delete("/stations")
-def delete_station(station_id:int, db: Session = Depends(get_db)):
+def delete_station(delete: Delete, db: Session = Depends(get_db)):
     """
     Deletes a station with the given station ID from the database.
 
@@ -146,25 +172,28 @@ def delete_station(station_id:int, db: Session = Depends(get_db)):
     Returns:
     None
     """
-    station_model = db.query(models.Stations).filter(models.Stations.id == station_id).first()
+    station_model = db.query(models.Stations).filter(models.Stations.id == delete.id).first()
     if not station_model:
-        raise HTTPException(status_code=404, detail=f"Station ID {station_id}: not found")
-    db.query(models.Stations).filter(models.Stations.id == station_id).delete()
+        raise HTTPException(status_code=404, detail=f"Station ID {delete.id}: not found")
+    db.query(models.Stations).filter(models.Stations.id == delete.id).delete()
     db.commit()
 
 @app.post("/qr")
-def qr(input:str, db: Session = Depends(get_db)):
+def qr(qrrequest: QRRequest, db: Session = Depends(get_db)):
     """
     Manages the data input from the QR scanner 
     Comes in json {body: "MESSASGE", user: "EMAIL"}
     """
-    message = input.get('body', '')
-    user_email = input.get('user', '')
+    return({"message": "test"})
+    message = input.get('body')
+    user_email = input.get('user')
 
     # get the user from login servern
     user_info_response = requests.get(f"http://127.0.0.1:5000/get_user_info/{user_email}")
     if user_info_response.status_code != 200:
-        raise HTTPException(status_code=400, detail="User not found or unauthorized")
+        return {"message": "UserInvalid"}
+        
+        #raise HTTPException(status_code=400, detail="User not found or unauthorized")
 
     user_info = user_info_response.json()
     is_admin = user_info.get('is_admin', False)

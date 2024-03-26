@@ -12,6 +12,47 @@ import 'station_form.dart';
 import 'bottom_sheet.dart';
 import 'station.dart';
 
+
+class deleteStation {
+  final int id;
+  deleteStation({
+    required this.id,
+  });
+
+    Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+    };
+  }
+}
+
+class updateStation {
+  final int id;
+  final String name;
+  final String address;
+  final LatLng location;
+  final int bikes;
+
+  updateStation({
+    required this.id, 
+    required this.name, 
+    required this.address, 
+    required this.location, 
+    required this.bikes, 
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'address': address,
+      'x': location.latitude,
+      'y': location.longitude,
+      'num_bike': bikes
+    };
+  }
+}
+
 class BasicMap extends StatefulWidget {
   const BasicMap({super.key});
   @override
@@ -55,7 +96,6 @@ class _BasicMapState extends State<BasicMap> {
     try {
       response = await http.get(url);
     } catch (e) {
-      print("Error123");
       print(e);
       return;
     }
@@ -86,7 +126,7 @@ class _BasicMapState extends State<BasicMap> {
         String name = stations[index].name;
         String addrs = stations[index].address;
         int bikes = stations[index].bikes;
-        List<dynamic> predicted_num_bike = stations[index].predicted_num_bike;
+        // List<dynamic> predicted_num_bike = stations[index].predicted_num_bike;
         showModalBottomSheet(
             context: context,
             builder: (context) { 
@@ -97,7 +137,7 @@ class _BasicMapState extends State<BasicMap> {
                   name: name, 
                   addrs: addrs, 
                   bikes: bikes,
-                  predicted_num_bike: predicted_num_bike,
+                  // predicted_num_bike: predicted_num_bike,
                   children: [
                 StationBubble(
                     onPressed: (){
@@ -297,39 +337,13 @@ class _BasicMapState extends State<BasicMap> {
 
                 if (response.statusCode == 200) {
                   print('Station added successfully');
-                  // Add the station to the local list and map markers if needed
-                  setState(() {
-                    stations.add(newStation);
-                    locMarker.add(
-                      Marker(
-                        point: newStation.location,
-                        child: GestureDetector(
-                          onTap: () => _showBottomSheet(stations.length - 1),
-                          child: StationLogo,
-                        ),
-                      ),
-                    );
-                  });
+                  fetchStation();
                 } else {
                   print('Failed to add station. Error: ${response.statusCode}');
                 }
               } catch (error) {
                 print('Failed to add station. Error: $error');
               }
-
-              setState(() {
-                stations.add(newStation);
-                locMarker.add(
-                  Marker(
-                    point: newStation.location,
-                    child: GestureDetector(
-                      onTap: () => _showBottomSheet(stations.length - 1),
-                      child: StationLogo,
-                    ),
-                  ),
-                );
-              });
-              // Close the dialog
               Navigator.of(context).pop();
           }
         );
@@ -358,6 +372,7 @@ class _BasicMapState extends State<BasicMap> {
     TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
     TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
 
+    // ignore: use_build_context_synchronously
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -368,9 +383,38 @@ class _BasicMapState extends State<BasicMap> {
           latitudeController: latitudeController, 
           longitudeController: longitudeController, 
           bikesController: bikesController, 
-          onPressed: () async 
-          {
-                //stations.put
+          onPressed: () async {
+              var editedStation = updateStation(
+                id: index,
+                name: nameController.text,
+                address: addressController.text,
+                location: LatLng(
+                  double.parse(latitudeController.text),
+                  double.parse(longitudeController.text),
+                ),
+                bikes: int.parse(bikesController.text),
+              );
+            
+              try {
+                final response = await http.put(
+                  url,
+                  headers: <String, String>{
+                    'Content-Type': 'application/json; charset=UTF-8',
+                  },
+                  body: jsonEncode(editedStation.toJson()),
+                );
+
+                if (response.statusCode == 200) {
+                  print('Station edited successfully');
+                  fetchStation();
+                } else {
+                  print('Failed to edit station. Error: ${response.statusCode}');
+                }
+              } catch (error) {
+                print('Failed to edit station. Error: $error');
+              }
+
+              Navigator.of(context).pop();
           }
         );
       }
@@ -381,23 +425,26 @@ class _BasicMapState extends State<BasicMap> {
   void _onDeleteStationPressed(int index) async {
     var response;
     var url = Uri.http('localhost:8000', 'stations/');
+
+    var deletedStation = deleteStation(id: index);
     try {
       final response = await http.delete(
         url,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: json.encode( {"station_id": index}),
+        body: json.encode(deletedStation.toJson()),
       );
-
-      if(response == 200){
-        print("works");
+      if(response.statusCode == 200){
+        print('Station deleted successfully');
       }else{
-        print("did not work");
+        print('Failed to delete station. Error: ${response.statusCode}');
       }
     }catch (error) {
       print('Failed to delete station. Error: $error');
     }
+    Navigator.of(context).pop();
+    fetchStation();
     
   }
 
