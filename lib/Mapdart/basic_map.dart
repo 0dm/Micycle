@@ -80,7 +80,6 @@ class _BasicMapState extends State<BasicMap> {
   bool _canFetchStation = true;
   bool isWaitingForMapTap = false;
 
-
   void fetchStation() async {
     if (_canFetchStation == false){
       return;
@@ -126,7 +125,7 @@ class _BasicMapState extends State<BasicMap> {
         String name = stations[index].name;
         String addrs = stations[index].address;
         int bikes = stations[index].bikes;
-        // List<dynamic> predicted_num_bike = stations[index].predicted_num_bike;
+        List<dynamic> predicted_num_bike = stations[index].predicted_num_bike;
         showModalBottomSheet(
             context: context,
             builder: (context) { 
@@ -137,7 +136,7 @@ class _BasicMapState extends State<BasicMap> {
                   name: name, 
                   addrs: addrs, 
                   bikes: bikes,
-                  // predicted_num_bike: predicted_num_bike,
+                  predicted_num_bike: predicted_num_bike,
                   children: [
                 StationBubble(
                     onPressed: (){
@@ -148,7 +147,11 @@ class _BasicMapState extends State<BasicMap> {
                 Row(
                   children: [
                   StationBubble(
-                    onPressed: (){_onEditStationPressed(index + 1);}, 
+                    onPressed: (){
+                     _onEditStationPressed(index + 1);
+                    Navigator.of(context).pop();
+                    fetchStation();
+                    }, 
                     icon: Icon(Icons.edit)
                   ),
                   StationBubble(
@@ -372,6 +375,8 @@ class _BasicMapState extends State<BasicMap> {
     TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
     TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
 
+    url = Uri.http('localhost:8000', 'stations/');
+
     // ignore: use_build_context_synchronously
     showDialog(
       context: context,
@@ -394,7 +399,7 @@ class _BasicMapState extends State<BasicMap> {
                 ),
                 bikes: int.parse(bikesController.text),
               );
-            
+
               try {
                 final response = await http.put(
                   url,
