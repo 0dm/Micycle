@@ -1,8 +1,8 @@
-import 'dart:convert';
-import 'dart:html' as html;
-
+// create_account_page.dart
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'stripe_web.dart'; // Import the Stripe web service
+import 'stripe_ios.dart';
 
 class CreateAccountPage extends StatefulWidget {
   @override
@@ -10,7 +10,7 @@ class CreateAccountPage extends StatefulWidget {
 }
 
 class _CreateAccountPageState extends State<CreateAccountPage> {
-  final _formKey = GlobalKey<FormState>(); // Add GlobalKey for the form
+  final _formKey = GlobalKey<FormState>(); // GlobalKey for the form
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _displayNameController = TextEditingController();
@@ -20,101 +20,56 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   Future<void> createAccount() async {
     // Check if the Admin option is selected and the admin code is not "admin"
     if (_isAdmin && _adminCodeController.text != 'admin') {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Invalid admin code. Please try again.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop(); // Dismiss the dialog
-              },
-              child: Text('Okay'),
-            ),
-          ],
-        ),
-      );
+      _showDialog('Error', 'Invalid admin code. Please try again.');
       return; // Stop the function from proceeding further
     }
-  var url = 'http://localhost:5000/create_account'; // Adjust to your actual server address
-  var response = await http.post(
-    Uri.parse(url),
-    headers: {"Content-Type": "application/json"},
-    body: json.encode({
-      'email': _emailController.text,
-      'password': _passwordController.text,
-      'displayName': _displayNameController.text, // Make sure to add this line
-      'isAdmin': _isAdmin, // Assuming you have a boolean value for isAdmin
-      'adminCode': _isAdmin ? _adminCodeController.text : '', // Include adminCode conditionally based on isAdmin
-    }),
-  );
 
-  if (response.statusCode == 200) {
-    print('Response body: ${response.body}');
-    var responseData = json.decode(response.body);
-    var checkoutUrl = responseData['url'];  // Use 'id' instead of 'checkoutSessionId'
-    html.window.location.href = checkoutUrl;
-  } else if (response.statusCode == 409) {
-    // Email already exists
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Error'),
-        content: Text('This email address already has an account.'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-            child: Text('Try Again'),
-          ),
-        ],
-      ),
-    );
-  } if (response.statusCode == 201) {
-  // Account created successfully
-  showDialog(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text('Success'),
-      content: Text('Account created successfully, please log in.'),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            // This assumes you have a named route set up for your login page
-            // Replace '/loginPage' with the actual route name for your login page
-            Navigator.of(ctx).pop(); // Close the dialog
-            Navigator.of(context).pushReplacementNamed('/login');
-            },
-          child: Text('Login'),
-          ),
-        ],
-      ),
-    );
+    try {
+      if (kIsWeb) {
+        // Use the StripeWeb service for web-specific logic
+        await StripeWeb().createAccount(
+          email: _emailController.text,
+          password: _passwordController.text,
+          displayName: _displayNameController.text,
+          isAdmin: _isAdmin,
+          adminCode: _adminCodeController.text,
+        );
+        // Web browser will handle redirection to Stripe checkout
+      } else {
+        await StripeIOS().createAccount(
+          context: context,
+          email: _emailController.text,
+          password: _passwordController.text,
+          displayName: _displayNameController.text,
+          isAdmin: _isAdmin,
+          adminCode: _adminCodeController.text,
+        );
+      }
+      
+    } catch (e) {
+      // Handle any errors by showing a dialog
+      _showDialog('Error', e.toString());
+    }
   }
-  else {
-    // Handle other errors
+
+  // Helper method to show dialogs
+  void _showDialog(String title, String content) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Error'),
-        content: Text('Failed to create account. Please try again.'),
+        title: Text(title),
+        content: Text(content),
         actions: <Widget>[
           TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
+            onPressed: () => Navigator.of(ctx).pop(),
             child: Text('Try Again'),
           ),
         ],
       ),
     );
   }
-}
 
-
-    @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -123,56 +78,28 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       body: Center(
         child: SingleChildScrollView(
           child: Form(
-            // Wrap Column with a Form widget
-            key: _formKey, // Assign the GlobalKey to the Form
+            key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.all(16),
-                    child: TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(hintText: 'Email'),
-                      validator: (value) {
-                        // Regular expression for validating email
-                        final emailRegex = RegExp(
-                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                        );
-                        if (value == null ||
-                            value.isEmpty ||
-                            !emailRegex.hasMatch(value)) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    )),
-                Padding(
-                    padding: EdgeInsets.all(16),
-                    child: TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(hintText: 'Password'),
-                      validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            value.length < 6) {
-                          return 'Password must be more than 6 characters';
-                        }
-                        return null;
-                      },
-                    )),
-                Padding(
-                    padding: EdgeInsets.all(16),
-                    child: TextFormField(
-                      controller: _displayNameController,
-                      decoration: InputDecoration(hintText: 'Display Name'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a display name';
-                        }
-                        return null;
-                      },
-                    )),
+                _buildTextField(_emailController, 'Email', (value) {
+                  if (value == null || value.isEmpty || !value.contains('@')) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                }),
+                _buildTextField(_passwordController, 'Password', (value) {
+                  if (value == null || value.isEmpty || value.length < 6) {
+                    return 'Password must be more than 6 characters';
+                  }
+                  return null;
+                }, obscureText: true),
+                _buildTextField(_displayNameController, 'Display Name', (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a display name';
+                  }
+                  return null;
+                }),
                 SwitchListTile(
                   title: Text('Admin Account'),
                   value: _isAdmin,
@@ -183,14 +110,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   },
                 ),
                 if (_isAdmin)
-                  TextFormField(
-                    controller: _adminCodeController,
-                    decoration: InputDecoration(hintText: 'Admin Code'),
-                    // Optional: Add validator if admin code has specific requirements
-                  ),
+                  _buildTextField(_adminCodeController, 'Admin Code', (value) => null),
                 ElevatedButton(
                   onPressed: () {
-                    // Validate form before sending request
                     if (_formKey.currentState!.validate()) {
                       createAccount();
                     }
@@ -212,5 +134,18 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     _displayNameController.dispose();
     _adminCodeController.dispose();
     super.dispose();
+  }
+
+  // Helper method to build text fields
+  Widget _buildTextField(TextEditingController controller, String labelText, String? Function(String?) validator, {bool obscureText = false}) {
+    return Padding(
+      padding: EdgeInsets.all(16),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(hintText: labelText),
+        validator: validator,
+        obscureText: obscureText,
+      ),
+    );
   }
 }

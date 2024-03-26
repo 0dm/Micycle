@@ -181,6 +181,25 @@ def get_user_info(email):
         return jsonify({"error": "User not found"}), 404
 
 
+
+@app.route('/create_setup_intent', methods=['POST'])
+def create_setup_intent():
+    data = request.get_json()
+    user = User.query.filter_by(email=data['email']).first()
+    if not user or not user.stripe_customer_id:
+        return jsonify({"error": "User not found or Stripe customer ID missing"}), 404
+    
+    try:
+        setup_intent = stripe.SetupIntent.create(
+            customer=user.stripe_customer_id,
+            usage='off_session',  # Allows the payment method to be used for future payments
+        )
+        return jsonify({"clientSecret": setup_intent.client_secret}), 200
+    except Exception as e:
+        return jsonify({"error": "Failed to create setup intent: " + str(e)}), 500
+
+
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # Initialize database within an application context
