@@ -1,9 +1,17 @@
+import 'package:Micycle/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 import 'login_page.dart';
 
 void main() {
-  runApp(Main());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider.instance,
+      child: Main(),
+    )
+  );
   initDatabase();
 }
 
@@ -19,9 +27,7 @@ class Main extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Micycle Login',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: Provider.of<ThemeProvider>(context).themeData,
       home: LoginPage(),
       routes: {
         '/login': (context) => LoginPage(),

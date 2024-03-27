@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'package:Micycle/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:typed_data';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'package:provider/provider.dart';
 class Scanner extends StatefulWidget {
   @override
   _ScannerState createState() => _ScannerState();
@@ -14,9 +15,10 @@ class _ScannerState extends State<Scanner> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scanner'),
+        title: Text('Scanner', style: TextStyle(color:themeProvider.themeData.colorScheme.primary)),
         actions: [
           IconButton(
             color: Colors.black,
@@ -41,9 +43,9 @@ class _ScannerState extends State<Scanner> {
               builder: (context, state, child) {
                 switch (state as CameraFacing) {
                   case CameraFacing.front:
-                    return const Icon(Icons.camera_front);
+                    return Icon(Icons.camera_front, color: themeProvider.themeData.colorScheme.primary);
                   case CameraFacing.back:
-                    return const Icon(Icons.camera_rear);
+                    return Icon(Icons.camera_rear, color: themeProvider.themeData.colorScheme.primary);
                 }
               },
             ),

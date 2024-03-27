@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:Micycle/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
 import 'home.dart';
@@ -22,54 +24,84 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text('Settings',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           ListTile(
-            title: const Text('Change Username'),
+            title: Text('Change Username',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: const Icon(Icons.chevron_right),
             onTap: _changeUsername, // Pass context here
           ),
           ListTile(
-            title: const Text('Change Email'),
+            title: Text('Change Email',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: const Icon(Icons.chevron_right),
             onTap: _changeEmail,
           ),
           ListTile(
-            title: const Text('Change Password'),
+            title:Text('Change Password',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: const Icon(Icons.chevron_right),
             onTap: _changePassword,
           ),
           ListTile(
-            title: const Text('Font Size'),
+            title: Text('Font Size',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: SizedBox(
               width: 200,
               child: Slider(
-                value: _fontSize,
-                min: 10,
-                max: 24,
-                divisions: 14,
-                label: _fontSize.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    _fontSize = value;
-                  });
+                    value: themeProvider.fontSize,
+                    min: 10,
+                    max: 30,
+                    activeColor: themeProvider.themeData.colorScheme.primary,
+                    inactiveColor: themeProvider.themeData.colorScheme.secondary,
+                    divisions: 4,
+                    label: themeProvider.fontSize.toString(),
+                    onChanged: (double value) {
+                      setState(() {
+                        themeProvider.fontSize = value;
+                      });
                 },
               ),
             ),
           ),
           ListTile(
-            title: const Text('Color Theme'),
+            title: Text('Color Theme',
+                  style: TextStyle(
+                    fontSize: themeProvider.fontSize,
+                    color: themeProvider.themeData.colorScheme.secondary,
+                  ),),
             trailing: Switch(
-              value: _darkTheme,
-              onChanged: (bool value) {
-                setState(() {
-                  _darkTheme = value;
-                });
+                  value: _darkTheme,
+                  activeColor: themeProvider.themeData.colorScheme.primary,
+                  inactiveThumbColor: themeProvider.themeData.colorScheme.secondary,
+                  onChanged: (bool value) {
+                    setState(() {
+                      _darkTheme = value;
+                      themeProvider.toggleTheme();
+                    });
               },
             ),
           ),

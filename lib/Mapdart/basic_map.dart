@@ -1,3 +1,5 @@
+import 'package:Micycle/theme/theme_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -34,6 +36,7 @@ class BottomSheet extends StatelessWidget{
 
     @override
     Widget build(BuildContext context) {
+        final themeProvider = Provider.of<ThemeProvider>(context);
         return Container(
             constraints: BoxConstraints.expand(
                 width: MediaQuery.of(context).size.width,
@@ -75,7 +78,7 @@ class BottomSheet extends StatelessWidget{
                         		    height: 80, // Diameter of the circle
                         		    margin: EdgeInsets.only(right: 8), // Spacing between buttons
                         		    decoration: BoxDecoration(
-                            			color: Colors.blue, // Color of the circle
+                            			color: themeProvider.themeData.colorScheme.secondary, // Color of the circle
                             			shape: BoxShape.circle,
                         		    ),
                         		    child: ElevatedButton(
@@ -87,7 +90,7 @@ class BottomSheet extends StatelessWidget{
                             			},
                             			style: ElevatedButton.styleFrom(
                             			    shape: CircleBorder(),
-                            			    backgroundColor: Colors.blue, // Background color of the button
+                            			    backgroundColor: themeProvider.themeData.colorScheme.background, // Background color of the button
                             			),
                             			child: Icon(Icons.directions),
                         		    ),
@@ -221,6 +224,7 @@ class _BasicMapState extends State<BasicMap> {
 
     @override
     Widget build(BuildContext context) {
+        final themeProvider = Provider.of<ThemeProvider>(context);
         return FlutterMap(
             mapController: mapController,
             
@@ -257,7 +261,7 @@ class _BasicMapState extends State<BasicMap> {
                             height: 80, // Diameter of the circle
                             margin: EdgeInsets.only(right: 8), // Spacing between buttons
                             decoration: BoxDecoration(
-                                color: Colors.blue, // Color of the circle
+                                color: themeProvider.themeData.colorScheme.secondary, // Color of the circle
                                 shape: BoxShape.circle,
                             ),
                             child: ElevatedButton(
@@ -265,14 +269,17 @@ class _BasicMapState extends State<BasicMap> {
                                     isProgramMoved = true;
                                     ifMoved = false;
                                     mapController.move(curLoc, 15);
-                                    setState(() {locationActive = Icon(Icons.location_on);});
+                                    setState(() {locationActive = Icon(Icons.location_on, color: themeProvider.themeData.colorScheme.secondary);});
                                     isProgramMoved=false;
                                 },
                                 style: ElevatedButton.styleFrom(
                                     shape: CircleBorder(),
-                                    backgroundColor: Colors.blue, // Background color of the button
+                                    backgroundColor: themeProvider.themeData.colorScheme.background, // Background color of the button
                                 ),
-                            child: locationActive
+                            child: Icon(
+                                  locationActive.icon,
+                                  color: themeProvider.themeData.colorScheme.secondary,
+                                )
                             )
                         )
                     ),
@@ -286,7 +293,7 @@ class _BasicMapState extends State<BasicMap> {
                             height: 80, // Diameter of the circle
                             margin: EdgeInsets.only(right: 8), // Spacing between buttons
                             decoration: BoxDecoration(
-                                color: Colors.blue, // Color of the circle
+                                color: themeProvider.themeData.colorScheme.secondary, // Color of the circle
                                 shape: BoxShape.circle,
                             ),
                             child: ElevatedButton(
@@ -295,9 +302,9 @@ class _BasicMapState extends State<BasicMap> {
                                 },
                                 style: ElevatedButton.styleFrom(
                                     shape: CircleBorder(),
-                                    backgroundColor: Colors.blue, // Background color of the button
+                                    backgroundColor: themeProvider.themeData.colorScheme.background, // Background color of the button
                                 ),
-                            child: Icon(Icons.refresh)
+                            child: Icon(Icons.refresh,color:themeProvider.themeData.colorScheme.secondary,)
                             )
                         )
                     ),

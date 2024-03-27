@@ -2,8 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import 'create_account_page.dart';
+import 'home.dart';
+import 'theme/theme_provider.dart';
 import 'home.dart';
 
 class LoginPage extends StatefulWidget {
@@ -74,9 +77,13 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: Text('Login', style: TextStyle(
+          color: themeProvider.themeData.colorScheme.secondary,
+          fontSize: themeProvider.fontSize,
+        )),
         automaticallyImplyLeading: false,
       ),
       body: Center(
@@ -90,7 +97,10 @@ class _LoginPageState extends State<LoginPage> {
                   padding: EdgeInsets.all(16),
                   child: TextFormField(
                     controller: _emailController,
-                    decoration: InputDecoration(hintText: 'Email'),
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                      hintStyle: TextStyle(color: themeProvider.themeData.colorScheme.secondary),
+                    ),
                     validator: (value) {
                       final emailRegex = RegExp(
                         r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
@@ -107,7 +117,10 @@ class _LoginPageState extends State<LoginPage> {
                   child: TextFormField(
                     controller: _passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(hintText: 'Password'),
+                    decoration: InputDecoration(
+                      hintText: 'Password',
+                      hintStyle: TextStyle(color: themeProvider.themeData.colorScheme.secondary,fontSize: themeProvider.fontSize),
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty || value.length < 6) {
                         return 'Password must be more than 6 characters';
@@ -122,7 +135,10 @@ class _LoginPageState extends State<LoginPage> {
                       login();
                     }
                   },
-                  child: Text('Login'),
+                  child: Text('Login', style: TextStyle(
+                    color: themeProvider.themeData.colorScheme.primary,
+                    fontSize: themeProvider.fontSize,
+                  )),
                 ),
                 TextButton(
                   onPressed: () {
@@ -131,7 +147,10 @@ class _LoginPageState extends State<LoginPage> {
                       MaterialPageRoute(builder: (context) => CreateAccountPage()),
                     );
                   },
-                  child: Text('Create Account'),
+                  child: Text('Create Account', style: TextStyle(
+                    color: themeProvider.themeData.colorScheme.primary,
+                    fontSize: themeProvider.fontSize,
+                  )),
                 ),
               ],
             ),

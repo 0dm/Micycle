@@ -2,11 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import 'account_details_page.dart';
 import 'home.dart';
 import 'main.dart';
 import 'settings_page.dart';
+import 'theme/theme.dart';
+import 'theme/theme_provider.dart';
 
 const String loginPageRoute = '/login';
 
@@ -20,9 +23,16 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(
+          'Profile',
+          style: TextStyle(
+                  fontSize: themeProvider.fontSize,
+                  color: themeProvider.themeData.colorScheme.primary,
+                ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -31,6 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextButton(
+              
               onPressed: () {
                 // Navigate to the Account Details page
                 Navigator.push(
@@ -38,7 +49,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   MaterialPageRoute(builder: (context) => const AccountDetailsPage()),
                 );
               },
-              child: const Text('Account Details'),
+              child: Text(
+                'Account Details',
+                style: TextStyle(
+                  fontSize: themeProvider.fontSize,
+                  color: themeProvider.themeData.colorScheme.secondary,
+                ),
+              ),
             ),
             const Divider(),
             TextButton(
@@ -49,14 +66,27 @@ class _ProfilePageState extends State<ProfilePage> {
                   MaterialPageRoute(builder: (context) => const SettingsPage()),
                 );
               },
-              child: const Text('Settings'),
+              child: Text(
+                'Settings',
+                style: TextStyle(
+                  fontSize: themeProvider.fontSize,
+                  color: themeProvider.themeData.colorScheme.secondary,
+                ),
+              ),
             ),
             const Divider(),
             ElevatedButton(
               onPressed: _showDeleteConfirmationDialog,
-              child: const Text('Delete Account'),
+              child: Text(
+                'Delete Account',
+                style: TextStyle(
+                  fontSize: themeProvider.fontSize,
+                  color: themeProvider.themeData.colorScheme.secondary,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red, // Button color
+                // Use themeProvider.themeData.colorScheme.secondary for text color
                 foregroundColor: Colors.white, // Text color
               ),
             ),
