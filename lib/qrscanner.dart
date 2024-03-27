@@ -69,7 +69,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
     // Construct the data to be sent in the POST request
     Map<String, String> postData = {
-      'message': result, 
+      'id': result, 
       'email': Home.email
     };
 
