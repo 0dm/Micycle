@@ -42,6 +42,8 @@ class Delete(BaseModel):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = Sessionlocal()
+
+
     num_stations = db.query(models.Stations).count()
     if num_stations == 0:
         stations = [
@@ -68,6 +70,7 @@ async def lifespan(app: FastAPI):
             db.add(station_model)
             db.commit()
 
+
         #Update the predicted number of bikes for each station
         for station_model in db.query(models.Stations).all():
             station_model.predicted_num_bike = get_average_num_bikes_per_hour(datetime.now(), station_model.id)
@@ -77,6 +80,7 @@ async def lifespan(app: FastAPI):
     else:
         print(f"Found {num_stations} stations in the database. Skipping population.")
         yield()
+ 
 
 app = FastAPI(lifespan=lifespan)
 
@@ -192,15 +196,14 @@ def qr(rent: Rent, db: Session = Depends(get_db)):
     bike_id = rent.id 
     email = rent.email
    
-    response = requests.get(f"http://localhost:5000/get_user_info/{email}")
-    if response.status_code == 200:
-        user_info = response.json()
-        user_id = user_info.get("id")
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+    # response = requests.get(f"http://localhost:5000/get_user_info/{email}")
+    # if response.status_code == 200:
+    #     user_info = response.json()
+    #     user_id = user_info.get("id")
+    # else:
+    #     print(response.status_code)
+
+    #     raise HTTPException(status_code=404, detail="User not found")
 
     existing_rent = db.query(models.Rents).filter(
         models.Rents.bike_id == bike_id,
@@ -208,24 +211,20 @@ def qr(rent: Rent, db: Session = Depends(get_db)):
     ).first()
 
     if existing_rent:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Bike currently taken out"
-        )
+        raise HTTPException(status_code=409, detail="Bike currently taken out")
+
 
     bike = db.query(models.Bikes).filter(models.Bikes.bike_id == bike_id).first()
     if not bike:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Bike not found"
-        )
+        raise HTTPException(status_code=404, detail="Bike not found")
+    
 
     start_station_id = bike.station_id
     
     # take out a bike
     rent_data = {
         "bike_id": bike_id,
-        "start_station_id": start_station_id,
+        "start": start_station_id,
         "user_email": email,
         "start_time": datetime.now()  
     }
@@ -239,19 +238,17 @@ def qr(rent: Rent, db: Session = Depends(get_db)):
 @app.get("/active/{email}")
 def check_active_rental(email: str, db: Session = Depends(get_db)):
 
-    response = requests.get(f"http://localhost:5000/get_user_info/{email}")
-    if response.status_code == 200:
-        user_info = response.json()
-        user_id = user_info.get("id")
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+    # response = requests.get(f"http://localhost:5000/get_user_info/{email}")
+    # if response.status_code == 200:
+    #     user_info = response.json()
+    #     user_id = user_info.get("id")
+    # else:
+    #     raise HTTPException(status_code=404, detail="User not found")
+       
 
 
     # most recent entry with the given user_email
-    recent_rental = db.query(models.Rents).filter(models.Rents.user_id == user_id).order_by(models.Rents.start_time.desc()).first()
+    recent_rental = db.query(models.Rents).filter(models.Rents.user_email == email).order_by(models.Rents.start_time.desc()).first()
 
     if recent_rental:
         if recent_rental.end_time is None:
@@ -292,10 +289,8 @@ def return_bike(ret: Ret, db: Session = Depends(get_db)):
     rental = db.query(models.Rents).filter(models.Rents.bike_id == bike_id,models.Rents.end_time == None).first()
 
     if not rental:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Bike not currently rented"
-        )
+        raise HTTPException(status_code=404, detail="Bike not currently rented")
+       
 
     # Update rental information
     rental.end_time = datetime.now()
@@ -320,14 +315,15 @@ def return_bike(ret: Ret, db: Session = Depends(get_db)):
 
     # Make a request to charge_user endpoint
     charge_data = {
-        "email": rental.email,
+        "email": rental.user_email,
         "amount": amount
     }
-    charge_response = requests.post("http://localhost:5000/charge_user", json=charge_data)
+    # charge_response = requests.post("http://localhost:5000/charge_user", json=charge_data)
 
-    # Handle charge_user response
-    if charge_response.status_code != 200:
-        raise HTTPException(status_code=charge_response.status_code, detail="Failed to charge user")
+    # # Handle charge_user response
+    # if charge_response.status_code != 200:
+    #     print(charge_response.status_code)
+    #     raise HTTPException(status_code=charge_response.status_code, detail="Failed to charge user")
 
     return {"message": "Bike returned successfully"}
 

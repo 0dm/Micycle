@@ -25,7 +25,7 @@ class Rents(Base):
     id = Column(Integer, primary_key=True, index=True)
     bike_id = Column(Integer, ForeignKey('bikes.bike_id'))
     start = Column(Integer, ForeignKey('stations.id'))
-    user_id = Column(Integer, ForeignKey('user.id'))
+    user_email = Column(String)
     start_time = Column(DateTime)
     end = Column(Integer, ForeignKey('stations.id'))
     end_time = Column(DateTime, nullable=True)

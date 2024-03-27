@@ -139,6 +139,7 @@ def payment_success():
 
 @app.route('/charge_user', methods=['POST'])
 def charge_user():
+    print("HELLO")
     data = request.get_json()
     email = data.get('email')  # Ensure 'email' is sent in your request body
     amount = data.get('amount')  # Amount in the smallest currency unit (e.g., cents for CAD)

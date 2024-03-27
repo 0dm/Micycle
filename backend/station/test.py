@@ -37,8 +37,16 @@ def test_return():
     response = requests.post(url, json=return_data)
     print("Response from /return endpoint:", response.json())
 
+def test_charge(): 
+    url="http://127.0.0.1:5000/charge_user"
+    body = {"email": "test@gmail.com", "amount": 500}
+
+    response = requests.post(url, json=body)
+    print("Response from /active endpoint:", response.json(), response.status_code)
+
 # Execute the tests
 if __name__ == "__main__":
     test_qr()
     test_active()
     test_return()
+    # test_charge()
