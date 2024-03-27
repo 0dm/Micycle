@@ -1,62 +1,82 @@
+import datetime
 from typing import List
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import models
+import requests
 from database import engine, Sessionlocal
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime, timedelta
+from sqlalchemy import func
+from predictor import get_average_num_bikes_per_hour
 
-class QRRequest(BaseModel):
-    message: str
+class Rent(BaseModel):
+    id: int
     email: str
+
+class Ret(BaseModel):
+    id: int
+    station: int
 
 class Create(BaseModel):
     name: str
     address: str
-    x=station: float
-    y=station.y: float
-    num_bike= int
+    x: float
+    y: float
+    num_bike: int
 
+class Update(BaseModel):
+    id: int
+    name: str
+    address: str
+    x: float
+    y: float
+    num_bike: int
 
 class Delete(BaseModel):
     id: int
 
 
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = Sessionlocal()
-    num_stations = db.query(models.Stations).count()
-    if num_stations == 0:
-        stations = [
-            ("UTM Bus Station", "Mississauga, ON L5L 1C6", 43.547852, -79.663229, 2),
-            ("Student Centre Station", "3359 Mississauga Rd, Mississauga, ON L5L 1C6", 43.549030, -79.663554,5),
-            ("CCT Station", "Mississauga, ON L5L 1J7", 43.549449, -79.663100,5),
-            ("MN Station", "Mississauga, ON L5L 1J7", 43.550708, -79.663328,3),
-            ("Dean Henderson Memorial Park Station", "Mississauga, ON L5K 2R1",43.533203, -79.659932,5),
-            ("Sir Johns Homestead Station", "3061 Sir Johns Homestead #29, Mississauga, ON L5L 2N4", 43.541112, -79.662074,4),
-            ("Erindale Park Station", "1560 Dundas St W, Mississauga, ON L5C 1E5", 43.545935, -79.652739,10),
-            ("Woodchester Station", "2605 Woodchester Dr, Mississauga, ON", 43.526129, -79.675644,15),
-            ("Collegeway Station", "2686 The Collegeway #101, Mississauga, ON L5L 2M9 ", 43.531145, -79.692270,12),
-            ("Central Pkwy Station", "1132 Central Pkwy W, Mississauga, ON L5C 4E5 ",43.566689, -79.659101,15),
-            ("Square One Station", "2800 Lawrences, Mississauga, ON L5L 2N5", 43.594678, -79.644202,11),
-        ]
-        for station_info in stations:
-            station_model = models.Stations(
-                name=station_info[0],
-                address=station_info[1],
-                x=station_info[2],
-                y=station_info[3]
-                ,num_bike=station_info[4]
-            )
-            db.add(station_model)
-            db.commit()
-        yield()
-    else:
-        print(f"Found {num_stations} stations in the database. Skipping population.")
-        yield()
+    # #num_stations = db.query(models.Stations).count()
+    # if num_stations == 0:
+    #     stations = [
+    #         ("UTM Bus Station", "Mississauga, ON L5L 1C6", 43.547852, -79.663229, 2),
+    #         ("Student Centre Station", "3359 Mississauga Rd, Mississauga, ON L5L 1C6", 43.549030, -79.663554,5),
+    #         ("CCT Station", "Mississauga, ON L5L 1J7", 43.549449, -79.663100,5),
+    #         ("MN Station", "Mississauga, ON L5L 1J7", 43.550708, -79.663328,3),
+    #         ("Dean Henderson Memorial Park Station", "Mississauga, ON L5K 2R1",43.533203, -79.659932,5),
+    #         ("Sir Johns Homestead Station", "3061 Sir Johns Homestead #29, Mississauga, ON L5L 2N4", 43.541112, -79.662074,4),
+    #         ("Erindale Park Station", "1560 Dundas St W, Mississauga, ON L5C 1E5", 43.545935, -79.652739,10),
+    #         ("Woodchester Station", "2605 Woodchester Dr, Mississauga, ON", 43.526129, -79.675644,15),
+    #         ("Collegeway Station", "2686 The Collegeway #101, Mississauga, ON L5L 2M9 ", 43.531145, -79.692270,12),
+    #         ("Central Pkwy Station", "1132 Central Pkwy W, Mississauga, ON L5C 4E5 ",43.566689, -79.659101,15),
+    #         ("Square One Station", "2800 Lawrences, Mississauga, ON L5L 2N5", 43.594678, -79.644202,11),
+    #     ]
+    #     for station_info in stations:
+    #         station_model = models.Stations(
+    #             name=station_info[0],
+    #             address=station_info[1],
+    #             x=station_info[2],
+    #             y=station_info[3]
+    #             ,num_bike=station_info[4]
+    #         )
+    #         db.add(station_model)
+    #         db.commit()
+
+        # Update the predicted number of bikes for each station
+    #     for station_model in db.query(models.Stations).all():
+    #         station_model.predicted_num_bike = get_average_num_bikes_per_hour(datetime.now(), station_model.id)
+    #         db.commit()
+    #     yield()
+    #     print(f"Found {num_stations} stations in the database. station populated.")
+    # else:
+    #     print(f"Found {num_stations} stations in the database. Skipping population.")
+    #     yield()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -86,6 +106,7 @@ class Station(BaseModel):
     x: float
     y: float
     num_bike: int
+    predicted_num_bike: int
 
 @app.get("/stations")
 def read_api(db: Session = Depends(get_db)):
@@ -113,14 +134,14 @@ def create_station(create: Create, db: Session = Depends(get_db)):
     Returns:
         Station: The created station object.
     """
-    return("Success")
-    station_model = models.Stations(name=station.name, address=station.address, x=station.x, y=station.y, num_bike=station.num_bike)
+    station_model = models.Stations(name=create.name, address=create.address, x=create.x, y=create.y, num_bike=create.num_bike)
+    station_model.predicted_num_bike = get_average_num_bikes_per_hour(datetime.now(), station_model.id)
     db.add(station_model)
     db.commit()
-    return station
+    return create
 
 @app.put("/stations")
-def update_station(update: Create, db: Session = Depends(get_db)):
+def update_station(update: Update, db: Session = Depends(get_db)):
     """
     Update a station in the database with the given station_id. 
     Parameters:
@@ -132,18 +153,17 @@ def update_station(update: Create, db: Session = Depends(get_db)):
     Raises:
     - HTTPException - If the station with the given ID is not found in the database.
     """
-    return("Success")
-    station_model = db.query(models.Stations).filter(models.Stations.id == station_id).first()
+    station_model = db.query(models.Stations).filter(models.Stations.id == update.id).first()
     if not station_model:
         raise HTTPException(status_code=404, detail="Station not found")
-    station_model.name = station.name
-    station_model.address = station.address
-    station_model.x = station.x
-    station_model.y = station.y
+    station_model.name = update.name
+    station_model.address = update.address
+    station_model.x = update.x
+    station_model.y = update.y
 
     db.add(station_model)
     db.commit()
-    return station
+    return update
 
 @app.delete("/stations")
 def delete_station(delete: Delete, db: Session = Depends(get_db)):
@@ -157,84 +177,159 @@ def delete_station(delete: Delete, db: Session = Depends(get_db)):
     Returns:
     None
     """
-    return("Success!")
-    station_model = db.query(models.Stations).filter(models.Stations.id == station_id).first()
+    station_model = db.query(models.Stations).filter(models.Stations.id == delete.id).first()
     if not station_model:
-        raise HTTPException(status_code=404, detail=f"Station ID {station_id}: not found")
-    db.query(models.Stations).filter(models.Stations.id == station_id).delete()
+        raise HTTPException(status_code=404, detail=f"Station ID {delete.id}: not found")
+    db.query(models.Stations).filter(models.Stations.id == delete.id).delete()
     db.commit()
 
 @app.post("/qr")
-def qr(qrrequest: QRRequest, db: Session = Depends(get_db)):
+def qr(rent: Rent, db: Session = Depends(get_db)):
     """
     Manages the data input from the QR scanner 
     Comes in json {body: "MESSASGE", user: "EMAIL"}
     """
-    return({"message": "test"})
-    message = input.get('body')
-    user_email = input.get('user')
-
-    # get the user from login servern
-    user_info_response = requests.get(f"http://127.0.0.1:5000/get_user_info/{user_email}")
-    if user_info_response.status_code != 200:
-        return {"message": "UserInvalid"}
-        
-        #raise HTTPException(status_code=400, detail="User not found or unauthorized")
-
-    user_info = user_info_response.json()
-    is_admin = user_info.get('is_admin', False)
-
-    # break down message into bike and station number 
-    if message.startswith("NEW") and is_admin:
-        # get bike_id and station_id
-        try:
-            _, bike_id, station_id = message.split(",")
-            bike_id = int(bike_id.strip())
-            station_id = int(station_id.strip())
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid message format")
-
-        # add new bike to bike database
-        db.execute(models.Bikes.__table__.insert().values(bike_id=bike_id, station_id=station_id))
-        db.commit()
-        return {"message": "Bike added successfully"}
-
-    elif message.startswith("{") and "," in message:
-        try:
-            data = message.strip("{}").split(",")
-            bike_id, start_station_id, user_id = map(int, data)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid message format")
-
-        # return a rental, mark endtime
-        existing_rent = db.query(models.Rents).filter(
-            models.Rents.bike_id == bike_id,
-            models.Rents.end_time == None
-        ).first()
-
-        if existing_rent:
-            # record return time in database 
-            existing_rent.end_station_id = start_station_id
-            existing_rent.end_time = datetime.now() 
-            db.commit()
-            return {"message": "Rent updated successfully"}
-
-        else:
-            # take out a bike
-            rent_data = {
-                "bike_id": bike_id,
-                "start_station_id": start_station_id,
-                "user_id": user_id,
-                "start_time": datetime.now()  
-            }
-            db.execute(models.Rents.__table__.insert().values(**rent_data))
-            db.commit()
-            return {"message": "Rent added successfully"}
-
+    bike_id = rent.id 
+    email = rent.email
+   
+    response = requests.get(f"http://localhost:5000/get_user_info/{email}")
+    if response.status_code == 200:
+        user_info = response.json()
+        user_id = user_info.get("id")
     else:
-        raise HTTPException(status_code=400, detail="Invalid message format")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    existing_rent = db.query(models.Rents).filter(
+        models.Rents.bike_id == bike_id,
+        models.Rents.end_time == None
+    ).first()
+
+    if existing_rent:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Bike currently taken out"
+        )
+
+    bike = db.query(models.Bikes).filter(models.Bikes.bike_id == bike_id).first()
+    if not bike:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Bike not found"
+        )
+
+    start_station_id = bike.station_id
+    
+    # take out a bike
+    rent_data = {
+        "bike_id": bike_id,
+        "start_station_id": start_station_id,
+        "user_email": email,
+        "start_time": datetime.now()  
+    }
+
+    db.execute(models.Rents.__table__.insert().values(**rent_data))
+    db.commit()
+    return {"message": "Rent added successfully"}
+
+
+
+@app.get("/active/{email}")
+def check_active_rental(email: str, db: Session = Depends(get_db)):
+
+    response = requests.get(f"http://localhost:5000/get_user_info/{email}")
+    if response.status_code == 200:
+        user_info = response.json()
+        user_id = user_info.get("id")
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+
+    # most recent entry with the given user_email
+    recent_rental = db.query(models.Rents).filter(models.Rents.user_email == email).order_by(models.Rents.start_time.desc()).first()
+
+    if recent_rental:
+        if recent_rental.end_time is None:
+            # Bike is rented
+            rented = True
+            current_time = datetime.now()
+            start_time = recent_rental.start_time
+            duration = current_time - start_time
+        else:
+            # Bike is not rented
+            rented = False
+            start_time = recent_rental.start_time
+            end_time = recent_rental.end_time
+            duration = end_time - start_time
+    else:
+        # No rental entry found
+        raise HTTPException(status_code=404, detail="No rental entry found for your user")
+
+    # Convert duration to hours:minutes:seconds format
+    duration_str = str(duration).split('.')[0]
+
+    # Return response
+    return {
+        "Rented": rented,
+        "Time": duration_str
+    }
+
+
+@app.post("/return")
+def return_bike(ret: Ret, db: Session = Depends(get_db)):
+    bike_id = ret.id 
+    station_id = ret.station 
+    
+
+    rental = db.query(models.Rents).filter(models.Rents.bike_id == bike_id,models.Rents.end_time == None).first()
+
+    if not rental:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Bike not currently rented"
+        )
+
+    # Update rental information
+    rental.end_time = datetime.now()
+    rental.end =  station_id
+
+    # Update bike information
+    bike = db.query(models.Bikes).filter(models.Bikes.bike_id == rental.bike_id).first()
+    if not bike:
+        raise HTTPException(status_code=404, detail="Bike not found")
+    
+    bike.station_id = station_id
+
+    # Commit changes to the database
+    db.commit()
+
+    start_time = rental.start_time
+    end_time = rental.end_time
+    duration = (end_time - start_time).total_seconds() / 3600  # Convert seconds to hours
+
+    # Calculate amount to charge the user
+    amount = round(duration * 0.30, 2)  # Charge $0.30 for each hour
+
+    # Make a request to charge_user endpoint
+    charge_data = {
+        "email": rental.email,
+        "amount": amount
+    }
+    charge_response = requests.post("http://localhost:5000/charge_user", json=charge_data)
+
+    # Handle charge_user response
+    if charge_response.status_code != 200:
+        raise HTTPException(status_code=charge_response.status_code, detail="Failed to charge user")
+
+    return {"message": "Bike returned successfully"}
+
     
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

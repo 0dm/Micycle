@@ -4,6 +4,8 @@ PODS:
   - FlutterMacOS (1.0.0)
   - geolocator_apple (1.2.0):
     - FlutterMacOS
+  - mobile_scanner (3.5.6):
+    - FlutterMacOS
   - sqflite (0.0.3):
     - Flutter
     - FlutterMacOS
@@ -14,6 +16,7 @@ DEPENDENCIES:
   - flutter_barcode_sdk (from `Flutter/ephemeral/.symlinks/plugins/flutter_barcode_sdk/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - geolocator_apple (from `Flutter/ephemeral/.symlinks/plugins/geolocator_apple/macos`)
+  - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
   - sqflite (from `Flutter/ephemeral/.symlinks/plugins/sqflite/darwin`)
   - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
 
@@ -24,6 +27,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
   geolocator_apple:
     :path: Flutter/ephemeral/.symlinks/plugins/geolocator_apple/macos
+  mobile_scanner:
+    :path: Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos
   sqflite:
     :path: Flutter/ephemeral/.symlinks/plugins/sqflite/darwin
   url_launcher_macos:
@@ -33,6 +38,7 @@ SPEC CHECKSUMS:
   flutter_barcode_sdk: 08d8341f9910bebdbe777240bb28fbc79d2f74be
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   geolocator_apple: 72a78ae3f3e4ec0db62117bd93e34523f5011d58
+  mobile_scanner: 54ceceae0c8da2457e26a362a6be5c61154b1829
   sqflite: 673a0e54cc04b7d6dba8d24fb8095b31c3a99eec
   url_launcher_macos: d2691c7dd33ed713bf3544850a623080ec693d95
 

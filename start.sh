@@ -3,11 +3,12 @@
 # Navigate to Flask backend directory
 cd 'backend'
 echo "Starting Flask backend..."
-FLASK_APP=app.py FLASK_ENV=development flask run &
+FLASK_APP=app.py FLASK_ENV=development flask run -host=0.0.0.0 &
 cd 'station'
 echo 'Starting station backend...'
-uvicorn station_service:app --reload
+uvicorn station_service:app --host 0.0.0.0 --reload
 STATION_PID=$!
+python3 predictor.py
 cd '..'
 # Save the PID of the Flask process
 FLASK_PID=$!
