@@ -145,10 +145,12 @@ class _BasicMapState extends State<BasicMap> {
                       Uri _url = Uri.parse( 'https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey'); launchUrl(_url);
                       }, 
                     icon: Icon(Icons.directions)
-                  ),
+                  ), Visibility(
+                  visible: (Home.isAdmin),
+                  child:
                 Row(
-                  children: [
-                  StationBubble(
+                  children: [ 
+                   StationBubble(
                     onPressed: (){
                      _onEditStationPressed(index + 1);
                     Navigator.of(context).pop();
@@ -161,7 +163,7 @@ class _BasicMapState extends State<BasicMap> {
                     icon: Icon(Icons.delete)
                   ),
                   ],
-                ),
+                ),),
               ],
                   );
             },
@@ -330,8 +332,6 @@ class _BasicMapState extends State<BasicMap> {
                 bikes: int.parse(bikesController.text),
                 predicted_num_bike: []
               );
-              
-              print("hello hello");
 
               // Send POST request to add the new station
               var url = Uri.http('localhost:8000', 'stations/');
