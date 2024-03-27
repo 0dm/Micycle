@@ -1,121 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../home.dart';
+import '../env.dart';
 import 'location_service.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
-
-class Station{
-    String name;
-    String address;
-    LatLng location;
-    int bikes;
-    Station({required this.name, required this.address, required this.location, required this.bikes});
-    factory Station.fromJson(Map<String, dynamic> json){
-        return Station(
-            name: json['name'],
-            address: json['address'],
-            location: LatLng(json['x'], json['y']),
-            bikes: json['num_bike']
-        );
-    }
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'address': address,
-      'x': location.latitude,
-      'y': location.longitude,
-      'num_bike': bikes,
-    };
-  }
-}
-
-class BottomSheet extends StatelessWidget {
-  final double sidex;
-  final double sidey;
-  final String name;
-  final String addrs;
-  final int bikes;
-
-  BottomSheet(
-      {required this.sidex,
-      required this.sidey,
-      required this.name,
-      required this.addrs,
-      required this.bikes}
-  );
-
-    @override
-    Widget build(BuildContext context) {
-        return Container(
-            constraints: BoxConstraints.expand(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.75
-            ),
-            padding: EdgeInsets.all(16),
-            child: Column(
-                children: <Widget>[
-                    Image.asset(
-                        'assets/images/placeHolderBike.jpeg', // Replace with your image asset
-                        width: MediaQuery.of(context).size.width, // Set image width to full screen width
-                        height: MediaQuery.of(context).size.height * 0.3, // Adjust the size accordingly
-                        fit: BoxFit.cover, // Cover the entire width while keeping aspect ratio
-                    ),
-                    SizedBox(height: 16),
-                    
-                    Text(
-                        '$name',
-                        style: TextStyle(fontSize: 30), // Adjust the style as needed
-                    ),
-                    Text(
-                        '$addrs',
-                        style: TextStyle(fontSize: 16), // Adjust the style as needed
-                    ),
-
-                    Text(
-                        'Remaining Bike: $bikes/10',
-                        style: TextStyle(fontSize: 16), // Adjust the style as needed
-                    ),
-
-                    SizedBox(height: 16),
-                    Align(
-                    	alignment: Alignment.centerLeft, // Aligning only this widget to the left
-                    	child: Row(
-                    	    mainAxisSize: MainAxisSize.min, // To prevent the Row from occupying the entire horizontal space
-                    	    children: [ 
-                        		Container(
-                        		    width: 80, // Diameter of the circle
-                        		    height: 80, // Diameter of the circle
-                        		    margin: EdgeInsets.only(right: 8), // Spacing between buttons
-                        		    decoration: BoxDecoration(
-                            			color: Colors.blue, // Color of the circle
-                            			shape: BoxShape.circle,
-                        		    ),
-                        		    child: ElevatedButton(
-                            			onPressed: () {
-                            			    // Action when the button is pressed
-                                            Uri _url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey');
-                                            launchUrl(_url);
-                            			    
-                            			},
-                            			style: ElevatedButton.styleFrom(
-                            			    shape: CircleBorder(),
-                            			    backgroundColor: Colors.blue, // Background color of the button
-                            			),
-                            			child: Icon(Icons.directions),
-                        		    ),
-                        		),
-                            ],
-                    	),
-                	)
-                ],
-            ),
-        );
-    }
-}
+import 'station_bubble.dart';
+import 'station_form.dart';
+import 'bottom_sheet.dart';
+import 'station.dart';
 
 class BasicMap extends StatefulWidget {
   const BasicMap({super.key});
@@ -155,7 +52,7 @@ class _BasicMapState extends State<BasicMap> {
     });
 
     var response;
-    var url = Uri.http('localhost:8000', 'stations');
+    var url = Uri.http(Env.STATIONS_SERVER, 'stations');
 
     try {
       response = await http.get(url);
@@ -191,10 +88,39 @@ class _BasicMapState extends State<BasicMap> {
         String name = stations[index].name;
         String addrs = stations[index].address;
         int bikes = stations[index].bikes;
+        List<dynamic> predicted_num_bike = stations[index].predicted_num_bike;
         showModalBottomSheet(
             context: context,
             builder: (context) { 
-                return BottomSheet(sidex: sidex, sidey: sidey, name: name, addrs: addrs, bikes: bikes);
+                return StationBottomSheet(
+                  index: index, 
+                  sidex: sidex, 
+                  sidey: sidey, 
+                  name: name, 
+                  addrs: addrs, 
+                  bikes: bikes,
+                  predicted_num_bike: predicted_num_bike,
+                  children: [
+                StationBubble(
+                    onPressed: (){
+                      Uri _url = Uri.parse( 'https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey'); launchUrl(_url);
+                      }, 
+                    icon: Icon(Icons.directions)
+                  ),
+                Row(
+                  children: [
+                  StationBubble(
+                    onPressed: (){_onEditStationPressed(index + 1);}, 
+                    icon: Icon(Icons.edit)
+                  ),
+                  StationBubble(
+                    onPressed: (){_onDeleteStationPressed(index + 1);}, 
+                    icon: Icon(Icons.delete)
+                  ),
+                  ],
+                ),
+              ],
+                  );
             },
             isScrollControlled: true, // Set to true so the BottomSheet can take full screen height if needed
         );
@@ -317,25 +243,11 @@ class _BasicMapState extends State<BasicMap> {
                     alignment: Alignment.topLeft,   
                     child: Padding(                            
                         padding: EdgeInsets.all(10.0),
-                        child: Container(
-                            width: 80, // Diameter of the circle
-                            height: 80, // Diameter of the circle
-                            margin: EdgeInsets.only(right: 8), // Spacing between buttons
-                            decoration: BoxDecoration(
-                                color: Colors.blue, // Color of the circle
-                                shape: BoxShape.circle,
-                            ),
-                            child: ElevatedButton(
-                                onPressed: () {
-                                    fetchStation();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    shape: CircleBorder(),
-                                    backgroundColor: Colors.blue, // Background color of the button
-                                ),
-                            child: Icon(Icons.refresh)
-                            )
-                        )
+                        child: FloatingActionButton(
+                          onPressed:  fetchStation,
+                          child:  Icon(Icons.refresh),
+                          tooltip: "Refresh Stations",
+                        ),
                     ),
                 ),
 
@@ -355,47 +267,14 @@ class _BasicMapState extends State<BasicMap> {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text("Add New Station"),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              TextFormField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Station Name'),
-              ),
-              TextFormField(
-                controller: addressController,
-                decoration: InputDecoration(labelText: 'Address'),
-              ),
-              TextFormField(
-                controller: latitudeController,
-                decoration: InputDecoration(labelText: 'Latitude'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-              ),
-              TextFormField(
-                controller: longitudeController,
-                decoration: InputDecoration(labelText: 'Longitude'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-              ),
-              TextFormField(
-                controller: bikesController,
-                decoration: InputDecoration(labelText: 'Number of Bikes'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: Text('Add'),
-            onPressed: () async {
+      return StationForm(
+        text: "Add a New Station", 
+        nameController: nameController, 
+        addressController: addressController, 
+        latitudeController: latitudeController, 
+        longitudeController: longitudeController, 
+        bikesController: bikesController, 
+        onPressed: () async {
               var newStation = Station(
                 name: nameController.text,
                 address: addressController.text,
@@ -404,10 +283,11 @@ class _BasicMapState extends State<BasicMap> {
                   double.parse(longitudeController.text),
                 ),
                 bikes: int.parse(bikesController.text),
+                predicted_num_bike: []
               );
               
               // Send POST request to add the new station
-              final Uri apiUrl = Uri.parse('http://localhost:8000/stations');
+              final Uri apiUrl = Uri.parse('${Env.STATIONS_SERVER}/stations');
               try {
                 final response = await http.post(
                   apiUrl,
@@ -451,16 +331,78 @@ class _BasicMapState extends State<BasicMap> {
                   ),
                 );
               });
-
               // Close the dialog
               Navigator.of(context).pop();
-            },
-          ),
-        ],
+          }
+        );
+      },
+    );
+  }
+
+  void _onEditStationPressed(int index) async {
+    var response;
+    var url = Uri.http('172.174.183.117:8000', 'stations/$index');
+
+    try {
+      response = await http.get(url);
+    } catch (e) {
+      print(e);
+      return;
+    }
+    print(index);
+    print(response.body);
+
+    Station station =  Station.fromJson(json.decode(response.body));
+
+    TextEditingController nameController = TextEditingController(text: station.name);
+    TextEditingController addressController = TextEditingController(text: station.address);
+    TextEditingController latitudeController = TextEditingController(text: station.location.latitude.toString());
+    TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
+    TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StationForm(
+          text: "Edit a Station", 
+          nameController: nameController, 
+          addressController: addressController, 
+          latitudeController: latitudeController, 
+          longitudeController: longitudeController, 
+          bikesController: bikesController, 
+          onPressed: () async 
+          {
+                //stations.put
+          }
+        );
+      }
+    );
+  }
+
+  //make sure to raise proper errors here
+  void _onDeleteStationPressed(int index) async {
+    var response;
+    var url = Uri.http('172.174.183.117:8000', 'stations/');
+    try {
+      final response = await http.delete(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: json.encode( {"station_id": index}),
       );
-    },
-  );
-}
+
+      if(response == 200){
+        print("works");
+      }else{
+        print("did not work");
+      }
+    }catch (error) {
+      print('Failed to delete station. Error: $error');
+    }
+    
+  }
+
   void promptUserForLocation() {
     final snackBar = SnackBar(
       content: Text('Tap on the map to select the location for the new station.'),
@@ -472,5 +414,4 @@ class _BasicMapState extends State<BasicMap> {
     });
   }
 }
-
 

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success</title>
+    <script type="text/javascript">
+        // Tell the Flutter app to navigate to the login page
+        function navigateToLogin() {
+            window.location.replace('http://172.174.183.117:5000/#/login'); // Replace with the URL of your Flutter app's login route
+        }
+
+        // Call the function after a short delay or put it in a window.onload handler
+        setTimeout(navigateToLogin, 1000); // Navigate after 1 second
+    </script>
+</head>
+<body>
+    <h1>Payment Successful!</h1>
+    <p>Redirecting to login...</p>
+</body>
+</html>

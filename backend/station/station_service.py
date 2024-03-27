@@ -1,7 +1,9 @@
+import datetime
 from typing import List
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import models
+import requests
 from database import engine, Sessionlocal
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
@@ -27,8 +29,9 @@ class Delete(BaseModel):
     id: int
 
 
-
-
+from datetime import datetime, timedelta
+from sqlalchemy import func
+from predictor import get_average_num_bikes_per_hour
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = Sessionlocal()
@@ -57,7 +60,13 @@ async def lifespan(app: FastAPI):
             )
             db.add(station_model)
             db.commit()
+
+        # Update the predicted number of bikes for each station
+        for station_model in db.query(models.Stations).all():
+            station_model.predicted_num_bike = get_average_num_bikes_per_hour(datetime.now(), station_model.id)
+            db.commit()
         yield()
+        print(f"Found {num_stations} stations in the database. station populated.")
     else:
         print(f"Found {num_stations} stations in the database. Skipping population.")
         yield()
@@ -90,6 +99,7 @@ class Station(BaseModel):
     x: float
     y: float
     num_bike: int
+    predicted_num_bike: int
 
 @app.get("/stations")
 def read_api(db: Session = Depends(get_db)):
@@ -338,4 +348,4 @@ def return_bike(ret: Ret, db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
