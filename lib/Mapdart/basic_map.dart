@@ -92,7 +92,7 @@ class _BasicMapState extends State<BasicMap> {
     });
 
     var response;
-    var url = Uri.http(Env.STATIONS_SERVER, 'stations');
+    var url = Uri.http('localhost:8000', 'stations');
 
     try {
       response = await http.get(url);
@@ -254,12 +254,14 @@ class _BasicMapState extends State<BasicMap> {
                         .end, // Aligns the column's children to the start, matching your design intent.
                     children: <Widget>[
                       if(Home.isAdmin) FloatingActionButton(
+                        heroTag: null,
                         onPressed: promptUserForLocation,
                         child: Icon(Icons.add_location),
                         tooltip: 'Add Station',
                       ),
                       SizedBox(height: 8),
                       FloatingActionButton(
+                          heroTag: null,
                           onPressed: () {
                             isProgramMoved = true;
                             ifMoved = false;
@@ -329,11 +331,13 @@ class _BasicMapState extends State<BasicMap> {
                 predicted_num_bike: []
               );
               
+              print("hello hello");
+
               // Send POST request to add the new station
-              final Uri apiUrl = Uri.parse('${Env.STATIONS_SERVER}/stations');
+              var url = Uri.http('localhost:8000', 'stations/');
               try {
                 final response = await http.post(
-                  apiUrl,
+                  url,
                   headers: <String, String>{
                     'Content-Type': 'application/json; charset=UTF-8',
                   },
@@ -358,7 +362,7 @@ class _BasicMapState extends State<BasicMap> {
 
   void _onEditStationPressed(int index) async {
     var response;
-    var url = Uri.http('172.174.183.117:8000', 'stations/$index');
+    var url = Uri.http('localhost:8000', 'stations/$index');
 
     try {
       response = await http.get(url);
@@ -431,7 +435,7 @@ class _BasicMapState extends State<BasicMap> {
   //make sure to raise proper errors here
   void _onDeleteStationPressed(int index) async {
     var response;
-    var url = Uri.http('172.174.183.117:8000', 'stations/');
+    var url = Uri.http('localhost:8000', 'stations/');
 
     var deletedStation = deleteStation(id: index);
     try {

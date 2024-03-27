@@ -155,6 +155,7 @@ def update_station(update: Update, db: Session = Depends(get_db)):
     station_model.address = update.address
     station_model.x = update.x
     station_model.y = update.y
+    station_model.num_bike = update.num_bike
 
     db.add(station_model)
     db.commit()
