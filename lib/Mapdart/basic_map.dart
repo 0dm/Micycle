@@ -12,48 +12,7 @@ import 'dart:async';
 import 'station_bubble.dart';
 import 'station_form.dart';
 import 'bottom_sheet.dart';
-import 'station.dart';
-
-
-class deleteStation {
-  final int id;
-  deleteStation({
-    required this.id,
-  });
-
-    Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-    };
-  }
-}
-
-class updateStation {
-  final int id;
-  final String name;
-  final String address;
-  final LatLng location;
-  final int bikes;
-
-  updateStation({
-    required this.id, 
-    required this.name, 
-    required this.address, 
-    required this.location, 
-    required this.bikes, 
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'address': address,
-      'x': location.latitude,
-      'y': location.longitude,
-      'num_bike': bikes
-    };
-  }
-}
+import 'station_models.dart';
 
 class BasicMap extends StatefulWidget {
   const BasicMap({super.key});
