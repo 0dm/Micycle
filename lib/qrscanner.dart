@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'scanner.dart';
 import 'home.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import '../env.dart';
 
 final Uri _url = Uri.parse('web/scanner.html');
 
@@ -76,7 +77,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
     // Make the POST request to the server
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/qr'), 
+      Uri.parse('${Env.STATIONS_SERVER}/qr'), 
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -100,7 +101,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   void _checkStatus() async {
     final response = await http.get(
-      Uri.parse('http://127.0.0.1:8000/check_active/${Home.email}'),
+      Uri.parse('http://localhost:8000/active/${Home.email}'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
