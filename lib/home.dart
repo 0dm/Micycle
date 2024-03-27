@@ -24,7 +24,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'Micycle',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepOrange,
       ),
       home: Home(),
     );
@@ -64,6 +64,7 @@ class _HomeState extends State<Home> {
         children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Color.fromARGB(255, 255, 95, 9),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
@@ -84,8 +85,8 @@ class _HomeState extends State<Home> {
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        unselectedItemColor: Colors.grey,
-        selectedItemColor: Colors.blue,
+        unselectedItemColor: const Color.fromARGB(255, 255, 255, 255),
+        selectedItemColor: const Color.fromARGB(255, 255, 255, 255),
       ),
     );
   }

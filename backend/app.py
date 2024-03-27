@@ -140,12 +140,11 @@ def payment_success():
 @app.route('/charge_user', methods=['POST'])
 def charge_user():
     data = request.get_json()
-    email = data.get('email')  # Make sure to send 'email' in your request body
-    amount = data.get('amount')  # Amount in cents
+    email = data.get('email')  # Ensure 'email' is sent in your request body
+    amount = data.get('amount')  # Amount in the smallest currency unit (e.g., cents for CAD)
 
     # Search for a Stripe customer by email
     customers = stripe.Customer.list(email=email).data
-    print(customers)
 
     # If no customer with that email was found, return an error
     if not customers:
@@ -154,17 +153,39 @@ def charge_user():
     # Assuming the first customer returned is the one we want
     customer = customers[0]
 
+    # Retrieve the default payment method for the customer
+    default_payment_method = None
+    if customer.invoice_settings.default_payment_method:
+        default_payment_method = customer.invoice_settings.default_payment_method
+    else:
+        # Handle case where there's no default payment method
+        return jsonify({"error": "No default payment method found for customer"}), 404
+
     try:
-        # Create a charge for the customer
-        charge = stripe.Charge.create(
+        # Create a PaymentIntent with the customer's default payment method
+        payment_intent = stripe.PaymentIntent.create(
             amount=amount,
-            currency="cad",  # Change to your currency if necessary
-            customer=customer.id,  # Use the Stripe customer ID
-            description="Charge for in-app purchase"
+            currency="cad",
+            customer=customer.id,
+            payment_method=default_payment_method,
+            description="Charge for in-app purchase",
+            confirm=True,  # Attempt to confirm the PaymentIntent immediately
+            automatic_payment_methods={"enabled": True, "allow_redirects": "never"},
+            # Optional: include a return_url for redirect-based payment methods
+            # return_url="https://example.com/return",
         )
-        return jsonify({"success": True, "charge_id": charge.id}), 200
+        return jsonify({"success": True, "payment_intent_id": payment_intent.id}), 200
+    except stripe.error.CardError as e:
+        # Handle card decline errors
+        body = e.json_body
+        err = body.get('error', {})
+        return jsonify({"error": err.get('message')}), 400
+    except stripe.error.StripeError as e:
+        # Handle general Stripe errors
+        return jsonify({"error": "Stripe error: {}".format(str(e))}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # Handle other unexpected errors
+        return jsonify({"error": "An unexpected error occurred: {}".format(str(e))}), 500
 
 
 @app.route("/get_user_info/<email>", methods=["GET"])

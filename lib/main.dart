@@ -23,17 +23,26 @@ class Main extends StatelessWidget {
   const Main({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Micycle Login',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: LoginPage(),
-      routes: {
-        '/login': (context) => LoginPage(),
-        // Define additional routes as needed
-      },
-    );
+    Widget build(BuildContext context) {
+      return MaterialApp(
+        title: 'My Application',
+        theme: ThemeData(
+          primaryColor: Color(0xFF96B5D4),
+          colorScheme: ColorScheme.fromSwatch().copyWith(
+            secondary: Color.fromARGB(255, 255, 95, 9), // Used to be 'accentColor'
+            background: Color.fromARGB(255, 34, 156, 255),
+          ),          
+          buttonTheme: ButtonThemeData(
+            buttonColor: Color(0xFF00EFB2),
+          ),
+          textTheme: TextTheme(
+            labelLarge: TextStyle(color: Color(0xFFF83748)), // Text color for ElevatedButton
+            bodyMedium: TextStyle(color: Colors.black),
+          ),
+          // Other customizations...
+        ),
+        home: LoginPage(),
+        // Other routes...
+      );
+    }
   }
-}

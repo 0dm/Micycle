@@ -132,7 +132,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     padding: EdgeInsets.all(16),
                     child: TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(hintText: 'Email'),
+                      decoration: InputDecoration(hintText: 'Email',
+                      fillColor: Color.fromARGB(213, 255, 255, 255), // Use a light color or white for text field backgrounds
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      )),
                       validator: (value) {
                         // Regular expression for validating email
                         final emailRegex = RegExp(
@@ -151,7 +157,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     child: TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(hintText: 'Password'),
+                      decoration: InputDecoration(hintText: 'Password',
+                      fillColor: Color.fromARGB(213, 255, 255, 255), // Use a light color or white for text field backgrounds
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      )),
                       validator: (value) {
                         if (value == null ||
                             value.isEmpty ||
@@ -165,7 +177,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     padding: EdgeInsets.all(16),
                     child: TextFormField(
                       controller: _displayNameController,
-                      decoration: InputDecoration(hintText: 'Display Name'),
+                      decoration: InputDecoration(hintText: 'Display Name',
+                      fillColor: Color.fromARGB(213, 255, 255, 255), // Use a light color or white for text field backgrounds
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      )),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a display name';
@@ -185,7 +203,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 if (_isAdmin)
                   TextFormField(
                     controller: _adminCodeController,
-                    decoration: InputDecoration(hintText: 'Admin Code'),
+                    decoration: InputDecoration(hintText: 'Admin Code',
+                      fillColor: Color.fromARGB(213, 255, 255, 255), // Use a light color or white for text field backgrounds
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      )),
                     // Optional: Add validator if admin code has specific requirements
                   ),
                 ElevatedButton(

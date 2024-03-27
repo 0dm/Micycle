@@ -101,7 +101,13 @@ class _LoginPageState extends State<LoginPage> {
                     padding: EdgeInsets.all(16),
                     child: TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(hintText: 'Email'),
+                      decoration: InputDecoration(hintText: 'Email',
+                      fillColor: Color.fromARGB(213, 255, 255, 255), // Use a light color or white for text field backgrounds
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      )),
                       validator: (value) {
                         // Regular expression for validating email
                         final emailRegex = RegExp(
@@ -120,7 +126,13 @@ class _LoginPageState extends State<LoginPage> {
                     child: TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(hintText: 'Password'),
+                      decoration: InputDecoration(hintText: 'Password',
+                      fillColor: Color.fromARGB(213, 255, 255, 255), // Use a light color or white for text field backgrounds
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      )),
                       validator: (value) {
                         if (value == null ||
                             value.isEmpty ||
@@ -137,6 +149,10 @@ class _LoginPageState extends State<LoginPage> {
                     }
                   },
                   child: Text('Login'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Colors.white,
+                  )
                 ),
                 TextButton(
                   onPressed: () {
@@ -146,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
                           builder: (context) => CreateAccountPage()),
                     );
                   },
-                  child: Text('Create Account'),
+                  child: Text('Create Account', style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
