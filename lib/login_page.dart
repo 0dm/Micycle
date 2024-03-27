@@ -99,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       hintText: 'Email',
-                      hintStyle: TextStyle(color: themeProvider.themeData.colorScheme.secondary),
+                      hintStyle: TextStyle(color: themeProvider.themeData.colorScheme.secondary,fontSize: themeProvider.fontSize),
                     ),
                     validator: (value) {
                       final emailRegex = RegExp(
