@@ -10,8 +10,9 @@ class Scanner extends StatefulWidget {
 }
 
 class _ScannerState extends State<Scanner> {
-  late MobileScannerController cameraController = MobileScannerController();
-
+  final MobileScannerController cameraController = MobileScannerController(autoStart: false);
+  String? value;
+  Timer? timer;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,6 +24,7 @@ class _ScannerState extends State<Scanner> {
             icon: ValueListenableBuilder(
               valueListenable: cameraController.torchState,
               builder: (context, state, child) {
+                
                 switch (state as TorchState) {
                   case TorchState.off:
                     return const Icon(Icons.flash_off, color: Colors.grey);
@@ -32,7 +34,7 @@ class _ScannerState extends State<Scanner> {
               },
             ),
             iconSize: 32.0,
-            onPressed: () => cameraController.toggleTorch(),
+            onPressed: () => Navigator.pop(context, "1"),
           ),
           IconButton(
             color: Colors.black,
@@ -55,14 +57,16 @@ class _ScannerState extends State<Scanner> {
       body: Stack(
         children: <Widget>[
           MobileScanner(
+            
             // fit: BoxFit.contain,
             controller: cameraController,
             onDetect: (capture) {
               final List<Barcode> barcodes = capture.barcodes;
-              final Uint8List? image = capture.image;
               for (final barcode in barcodes) {
                 if (barcode.rawValue != null){
-                  Navigator.pop(context, barcode.rawValue);
+                  value = barcode.rawValue;
+                  print(barcode.rawValue);
+                  return;
                 }
               }
             },
@@ -82,19 +86,30 @@ class _ScannerState extends State<Scanner> {
   @override
   void initState() {
     super.initState();
+      _startCamera();
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if(value != null){
+        Navigator.pop(context, value);
+        timer?.cancel();
+      }
+    });
     _requestCameraPermission();
   }
 
   Future<void> _requestCameraPermission() async {
-    PermissionStatus status = await Permission.camera.request();
-    if (!status.isGranted) {
-      // Show a message to the user explaining why the app needs the camera permission.
-    }
+    // PermissionStatus status = await Permission.camera.request();
+    // if (!status.isGranted) {
+    //   // Show a message to the user explaining why the app needs the camera permission.
+    // }
   }
 
   @override
   void dispose() {
-    cameraController?.dispose();
+    cameraController.stop();
+    cameraController.dispose();
     super.dispose();
+  }
+  Future<void> _startCamera() async {
+    Future.delayed(const Duration(seconds: 1), () async => await cameraController.start());
   }
 }

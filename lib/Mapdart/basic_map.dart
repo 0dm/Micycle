@@ -285,12 +285,14 @@ class _BasicMapState extends State<BasicMap> {
                         .end, // Aligns the column's children to the start, matching your design intent.
                     children: <Widget>[
                       if(Home.isAdmin) FloatingActionButton(
+                        heroTag: "Add station Button",
                         onPressed: promptUserForLocation,
                         child: Icon(Icons.add_location),
                         tooltip: 'Add Station',
                       ),
                       SizedBox(height: 8),
                       FloatingActionButton(
+                        heroTag: "Jump Location",
                           onPressed: () {
                             isProgramMoved = true;
                             ifMoved = false;

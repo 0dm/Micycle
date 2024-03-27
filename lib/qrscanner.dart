@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:typed_data';
 import 'scanner.dart';
 import 'home.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 final Uri _url = Uri.parse('web/scanner.html');
 
@@ -18,12 +19,16 @@ class QRScannerPage extends StatefulWidget {
 }
 
 class _QRScannerPageState extends State<QRScannerPage> {
+  
+  bool rented = false;
   String stationInfo = '';
   Timer? timer;
   int elapsedSeconds = 0;
 
   @override
   Widget build(BuildContext context) {
+    _startTimer();
+    Home.email = "123";
     return Scaffold(
       appBar: AppBar(
         title: Text('QR Code Scanner'),
@@ -34,24 +39,16 @@ class _QRScannerPageState extends State<QRScannerPage> {
           children: [
             ElevatedButton(
               onPressed: () {
-                _launchQRScanner();
-                _getStationInfo();
+                if (!rented){
+                  _launchQRScanner();
+                }
+                // _getStationInfo();
               },
               child: Text('Rent Bike with QR code'),
             ),
             SizedBox(height: 20),
             Text(stationInfo),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _stopTimer();
-                setState(() {
-                  stationInfo = 'Timer stopped. Elapsed time: $elapsedSeconds seconds';
-                  elapsedSeconds = 0; // Reset elapsed time
-                });
-              },
-              child: Text('Return Bike'),
-            ),
           ],
         ),
       ),
@@ -59,18 +56,21 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   void _launchQRScanner() async {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => Scanner()),
-  );
-
-  if (result != null) {
-    print('Scanned QR Code: $result');
     
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Scanner()),
+    );
+    if (result == null) {
+      return;
+    }
+    
+    print('Scanned QR Code: $result');
+
     // Construct the data to be sent in the POST request
     Map<String, String> postData = {
       'message': result, 
-      'email': '123@gmail.com'
+      'email': Home.email
     };
 
     print(jsonEncode(postData));
@@ -90,16 +90,41 @@ class _QRScannerPageState extends State<QRScannerPage> {
       print('POST Request Successful');
       print(response.body);
       setState(() {
-          stationInfo = 'Rented a bike';
+          stationInfo = 'Bike sucesfully rented';
           _startTimer();
         });
-        return;
-
+      _checkStatus();
     } else {
       print('Failed to make POST request. Status code: ${response.statusCode}, ${response.body}');
     }
   }
-}
+
+  void _checkStatus() async {
+    final response = await http.get(
+      Uri.parse('http://127.0.0.1:8000/check_active/${Home.email}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode != 200){
+      print("Panic");
+      return;
+    }
+
+    dynamic body = jsonDecode(response.body);
+    rented = body["Rented"];
+
+    if (body["Rented"]){
+      setState(() {
+          stationInfo = 'Bike rented for ${body["Time"]}';
+        });
+    }
+    else{
+        setState(() {
+          stationInfo = 'Bike returned after ${body["Time"]}';
+        });
+    }
+  }
 
   void _getStationInfo() async {
     final response = await http.get(Uri.parse('http://127.0.0.1:5001/get_endpoint'));
@@ -125,10 +150,9 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   void _startTimer() {
-    timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        elapsedSeconds++;
-      });
+    _stopTimer();
+    timer = Timer.periodic(Duration(seconds: 2), (timer) {
+      _checkStatus();
     });
   }
 
