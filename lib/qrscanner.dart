@@ -28,7 +28,6 @@ class _QRScannerPageState extends State<QRScannerPage> {
   @override
   Widget build(BuildContext context) {
     _startTimer();
-    Home.email = "123";
     return Scaffold(
       appBar: AppBar(
         title: Text('QR Code Scanner'),
