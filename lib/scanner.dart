@@ -34,7 +34,7 @@ class _ScannerState extends State<Scanner> {
               },
             ),
             iconSize: 32.0,
-            onPressed: () => Navigator.pop(context, "1"),
+            onPressed: () => cameraController.toggleTorch(),
           ),
           IconButton(
             color: Colors.black,
