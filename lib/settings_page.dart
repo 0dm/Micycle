@@ -113,13 +113,13 @@ class _SettingsPageState extends State<SettingsPage> {
     final currentPassword = await _showPasswordDialog();
     if (currentPassword == null) return;
 
-    // Ensure Home.userEmail is not null or handle accordingly before proceeding
-    if (Home.userEmail == null) {
+    // Ensure Home.email is not null or handle accordingly before proceeding
+    if (Home.email == null) {
       _showErrorDialog("Email is not available. Please log in again.");
       return;
     }
 
-    final passwordCorrect = await _verifyPassword(currentPassword, Home.userEmail); // Pass the email here
+    final passwordCorrect = await _verifyPassword(currentPassword, Home.email); // Pass the email here
     if (!passwordCorrect) {
       _showErrorDialog("Password incorrect. Please try again.");
       return;
@@ -214,7 +214,7 @@ class _SettingsPageState extends State<SettingsPage> {
       url,
       headers: {"Content-Type": "application/json"},
       body: json.encode({
-        "current_email": Home.userEmail, // Assuming Home.userEmail is the current email
+        "current_email": Home.email, // Assuming Home.email is the current email
         "new_email": newEmail
       }),
     );
@@ -227,7 +227,7 @@ class _SettingsPageState extends State<SettingsPage> {
       url,
       headers: {"Content-Type": "application/json"},
       body: json.encode({
-        "email": Home.userEmail, // Assuming Home.userEmail is the current email
+        "email": Home.email, // Assuming Home.email is the current email
         "new_password": newPassword,
       }),
     );
@@ -287,7 +287,7 @@ class _SettingsPageState extends State<SettingsPage> {
       url,
       headers: {"Content-Type": "application/json"},
       body: json.encode({
-        "email": Home.userEmail, // Assuming Home.userEmail stores the user's email
+        "email": Home.email, // Assuming Home.email stores the user's email
         "new_username": newUsername,
       }),
     );
@@ -326,7 +326,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final currentPassword = await _showPasswordDialog();
     if (currentPassword == null || currentPassword.isEmpty) return;
 
-    final passwordCorrect = await _verifyPassword(currentPassword, Home.userEmail);
+    final passwordCorrect = await _verifyPassword(currentPassword, Home.email);
     if (!passwordCorrect) {
       _showErrorDialog("Password incorrect. Please try again.");
       return;

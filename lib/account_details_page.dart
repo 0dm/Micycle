@@ -28,7 +28,7 @@ class AccountDetailsPage extends StatelessWidget {
           color: themeProvider.themeData.colorScheme.secondary,
           fontSize: themeProvider.fontSize,
         )),
-              subtitle: Text(Home.userEmail ?? 'N/A', style: TextStyle(
+              subtitle: Text(Home.email ?? 'N/A', style: TextStyle(
           color: themeProvider.themeData.colorScheme.primary,
           fontSize: themeProvider.fontSize,
         )), // Accessing static variable

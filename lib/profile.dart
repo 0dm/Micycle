@@ -157,7 +157,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     'Content-Type': 'application/json',
                   },
                   body: jsonEncode(<String, String>{
-                    'email': Home.userEmail, // Replace with actual user email
+                    'email': Home.email, // Replace with actual user email
                     'password': passwordController.text,
                   }),
                 );

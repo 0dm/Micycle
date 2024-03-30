@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'create_account_page.dart';
 import 'home.dart';
 import 'theme/theme_provider.dart';
-import 'home.dart';
+import 'env.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -19,19 +19,27 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future getDisplayName(String email) async {
-    var response = await http.get(
-      Uri.parse('http://localhost:5000/get_display_name/$email'),
-    );
-    if (response.statusCode == 200) {
-      return json.decode(response.body)['display_name'];
-    } else {
-      return null;
-    }
+  Future getCredentialsName(String email) async {
+    return http
+        .get(
+      Uri.parse("${Env.ACCOUNT_SERVER}/get_user_info/$email"),
+    )
+        .then((response) {
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        return {
+          'display_name': data['display_name'],
+          'is_admin': data['is_admin'],
+          'email': data['email']
+        };
+      } else {
+        return null;
+      }
+    });
   }
 
   Future<void> login() async {
-    var url = 'http://localhost:5000/login';
+    var url = "${Env.ACCOUNT_SERVER}/login";
     var response = await http.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -42,32 +50,34 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (response.statusCode == 200) {
-      var displayName = json.decode(response.body)['user']['display_name'];
-      setState(() {
-        Home.userEmail = _emailController.text;
-        Home.displayName = displayName;
-      });
-      Navigator.pushReplacement(
+      // Store the user's display name
+      var displayCredentials = await getCredentialsName(_emailController.text);
+
+      if (displayCredentials != null) {
+        // Store the user's display name in the app's state
+        setState(() {
+          Home.displayName = displayCredentials['display_name'];
+          Home.email = displayCredentials['email'];
+          Home.isAdmin = displayCredentials['is_admin'];
+        });
+      }
+      // Login successful, navigate to LoadingPage
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => Home()),
       );
     } else {
-      String errorReason = "An unexpected error occurred. Please try again later.";
-      if (response.statusCode == 401) {
-        errorReason = "Invalid email or password."; // For unauthorized
-      } else if (response.statusCode == 404) {
-        errorReason = "User not found. Please create an account."; // User not found
-      } // Add more conditions as needed
-
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Error'),
-          content: Text(errorReason),
+          content: Text('Failed to login. Please check your credentials.'),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Try Again'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Try Again'),
             ),
           ],
         ),

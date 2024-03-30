@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart'; // Import this package
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'theme/theme_provider.dart';
@@ -9,6 +13,7 @@ import 'theme/theme_provider.dart';
 import 'Mapdart/basic_map.dart';
 import 'chat.dart';
 import 'profile.dart';
+import 'package:http/http.dart' as http;
 import 'qrscanner.dart';
 
 void main() {
@@ -35,8 +40,8 @@ class App extends StatelessWidget {
 
 class Home extends StatefulWidget {
   static var displayName;
-  static var userEmail;
-
+  static var email;
+  static var isAdmin = true;
   const Home({Key? key}) : super(key: key);
   @override
   _HomeState createState() => _HomeState();
@@ -44,7 +49,6 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
-
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
     QRScannerPage(), // Fallback for other platforms
