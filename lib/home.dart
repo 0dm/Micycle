@@ -1,19 +1,28 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart'; // Import this package
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'theme/theme_provider.dart';
+
 import 'Mapdart/basic_map.dart';
+import 'chat.dart';
+import 'profile.dart';
 import 'package:http/http.dart' as http;
 import 'qrscanner.dart';
-import 'chat.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:flutter/foundation.dart'; // Import this package
 
 void main() {
-  runApp(const App());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider.instance,
+      child: const App(),
+    ),
+  );
 }
 
 class App extends StatelessWidget {
@@ -23,9 +32,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Micycle',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeProvider.instance.themeData,
       home: Home(),
     );
   }
@@ -45,8 +52,8 @@ class _HomeState extends State<Home> {
   static final List<Widget> _widgetOptions = <Widget>[
     const BasicMap(),
     QRScannerPage(), // Fallback for other platforms
-    const BikePage(),
     Chat(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -57,6 +64,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
@@ -73,18 +81,20 @@ class _HomeState extends State<Home> {
             label: 'QR Scanner',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.directions_bike),
-            label: 'Bike',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble),
             label: 'Chat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu),
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        unselectedItemColor: Colors.grey,
-        selectedItemColor: Colors.blue,
+        unselectedItemColor: themeProvider.themeData.colorScheme.primary, 
+        selectedItemColor: themeProvider.themeData.colorScheme.secondary,
+        selectedFontSize: themeProvider.fontSize, // Set the font size for selected labels
+        unselectedFontSize: themeProvider.fontSize, // Set the font size for unselected labels
       ),
     );
   }
@@ -194,14 +204,5 @@ class _QRScanPageState extends State<QRScanPage> {
   void dispose() {
     cameraController?.dispose();
     super.dispose();
-  }
-}
-
-class BikePage extends StatelessWidget {
-  const BikePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Bike Page'));
   }
 }

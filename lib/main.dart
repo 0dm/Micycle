@@ -1,6 +1,10 @@
+import 'package:Micycle/theme/theme_provider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart'; // Import flutter_stripe
+
+import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 import 'login_page.dart';
 import 'home.dart';
@@ -12,7 +16,12 @@ void main() {
     // Mobile-specific initialization
     Stripe.publishableKey = "pk_test_51OkvTNGUL4Iok28JlEJg9nU5wYZqyLCicm5ZyNcRAZ90DjgmqxYTtdKqBqa1o5oQW53WVKkDWvLZtP3UPkv2H5zc00Od695BDj";
   }
-  runApp(Main());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider.instance,
+      child: Main(),
+    )
+  );
 }
 Future<void> initDatabase() async {
   // Optionally call a Flask endpoint to initialize the database if needed.
@@ -26,9 +35,7 @@ class Main extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Micycle Login',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: Provider.of<ThemeProvider>(context).themeData,
       home: LoginPage(),
       routes: {
         '/login': (context) => LoginPage(),

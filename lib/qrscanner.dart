@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:Micycle/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:typed_data';
 import 'scanner.dart';
-
+import 'package:provider/provider.dart';
 final Uri _url = Uri.parse('web/scanner.html');
 
 
@@ -22,9 +23,11 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('QR Code Scanner'),
+        title: Text('QR Code Scanner', style: TextStyle(color:themeProvider.themeData.colorScheme.primary,fontSize: themeProvider
+            .fontSize),),
       ),
       body: Center(
         child: Column(
@@ -35,10 +38,10 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 _launchQRScanner();
                 _getStationInfo();
               },
-              child: Text('Rent Bike with QR code'),
+              child: Text('Rent Bike with QR code', style: TextStyle(color:themeProvider.themeData.colorScheme.primary,fontSize: themeProvider.fontSize)),
             ),
             SizedBox(height: 20),
-            Text(stationInfo),
+            Text(stationInfo, style: TextStyle(color:themeProvider.themeData.colorScheme.secondary,fontSize: themeProvider.fontSize)),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
@@ -48,7 +51,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
                   elapsedSeconds = 0; // Reset elapsed time
                 });
               },
-              child: Text('Return Bike'),
+              child: Text('Return Bike', style: TextStyle(color:themeProvider.themeData.colorScheme.primary,fontSize: themeProvider.fontSize)),
             ),
           ],
         ),

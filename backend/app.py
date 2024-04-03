@@ -201,6 +201,94 @@ def get_user_info(email):
     else:
         return jsonify({"error": "User not found"}), 404
 
+@app.route('/update_email', methods=['POST'])
+def update_email():
+    data = request.json
+    current_email = data.get("current_email")
+    new_email = data.get("new_email")
+    # Authenticate the request and validate new_email...
+    user = User.query.filter_by(email=current_email).first()
+    if user:
+        user.email = new_email
+        db.session.commit()
+        return jsonify({"message": "Email updated successfully"}), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+@app.route('/verify_password', methods=['POST'])
+def verify_password():
+    data = request.get_json()
+    email = data.get('email')
+    print(email)
+    password = data.get('password')
+
+    # Find the user by email
+    user = User.query.filter_by(email=email).first()
+    
+    print(f"Received password attempt for {email}: {password}")  # This will print to your terminal
+    
+    if user and user.password == password:
+        # Password is correct
+        return jsonify({"message": "Password verification successful"}), 200
+    else:
+        # Either the user wasn't found, or the password is incorrect
+        return jsonify({"error": "Invalid email or password"}), 401
+
+@app.route('/update_username', methods=['POST'])
+def update_username():
+    data = request.get_json()
+    user_email = data.get('email')
+    new_username = data.get('new_username')
+    
+    user = User.query.filter_by(email=user_email).first()
+    if user:
+        user.display_name = new_username
+        db.session.commit()
+        return jsonify({"message": "Username updated successfully"}), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+@app.route('/update_password', methods=['POST'])
+def update_password():
+    data = request.get_json()
+    print("Received data:", data)  # Debugging print
+
+    user_email = data.get('email')
+    new_password = data.get('new_password')
+
+    user = User.query.filter_by(email=user_email).first()
+    
+    if user:
+        user.password = new_password
+        db.session.commit()
+        return jsonify({"message": "Password updated successfully"}), 200
+    else:
+        print("User not found for email:", user_email)  # Debugging print
+        return jsonify({"error": "User not found"}), 404
+
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    data = request.get_json()
+    user_email = data.get('email')
+    password = data.get('password')  # Assuming password verification is required
+
+    print("Received data:", data)  # Debugging print
+
+    user = User.query.filter_by(email=user_email).first()
+
+    if user and user.password == password:
+        # Password matches, proceed with account deletion
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"message": "Account deleted successfully"}), 200
+    elif user:
+        # Password does not match
+        return jsonify({"error": "Password verification failed"}), 403
+    else:
+        # User not found
+        return jsonify({"error": "User not found"}), 404
+
+
 
 if __name__ == "__main__":
     with app.app_context():
