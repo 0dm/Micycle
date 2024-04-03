@@ -53,7 +53,7 @@ class _BasicMapState extends State<BasicMap> {
     });
 
     var response;
-    var url = Uri.http('localhost:8000', 'stations');
+    var url = Uri.http('172.174.183.117:8000', 'stations');
 
     try {
       response = await http.get(url);
@@ -295,7 +295,7 @@ class _BasicMapState extends State<BasicMap> {
               );
 
               // Send POST request to add the new station
-              var url = Uri.http('localhost:8000', 'stations/');
+              var url = Uri.http('172.174.183.117:8000', 'stations/');
               try {
                 final response = await http.post(
                   url,
@@ -323,7 +323,7 @@ class _BasicMapState extends State<BasicMap> {
 
   void _onEditStationPressed(int index) async {
     var response;
-    var url = Uri.http('localhost:8000', 'stations/$index');
+    var url = Uri.http('172.174.183.117:8000', 'stations/$index');
 
     try {
       response = await http.get(url);
@@ -342,7 +342,7 @@ class _BasicMapState extends State<BasicMap> {
     TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
     TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
 
-    url = Uri.http('localhost:8000', 'stations/');
+    url = Uri.http('172.174.183.117:8000', 'stations/');
 
     // ignore: use_build_context_synchronously
     showDialog(
@@ -396,7 +396,7 @@ class _BasicMapState extends State<BasicMap> {
   //make sure to raise proper errors here
   void _onDeleteStationPressed(int index) async {
     var response;
-    var url = Uri.http('localhost:8000', 'stations/');
+    var url = Uri.http('172.174.183.117:8000', 'stations/');
 
     var deletedStation = deleteStation(id: index);
     try {

@@ -1,6 +1,8 @@
 PODS:
   - flutter_barcode_sdk (2.0.0):
     - FlutterMacOS
+  - flutter_secure_storage_macos (3.3.1):
+    - FlutterMacOS
   - FlutterMacOS (1.0.0)
   - geolocator_apple (1.2.0):
     - FlutterMacOS
@@ -14,6 +16,7 @@ PODS:
 
 DEPENDENCIES:
   - flutter_barcode_sdk (from `Flutter/ephemeral/.symlinks/plugins/flutter_barcode_sdk/macos`)
+  - flutter_secure_storage_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - geolocator_apple (from `Flutter/ephemeral/.symlinks/plugins/geolocator_apple/macos`)
   - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
@@ -23,6 +26,8 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   flutter_barcode_sdk:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_barcode_sdk/macos
+  flutter_secure_storage_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   geolocator_apple:
@@ -36,6 +41,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   flutter_barcode_sdk: 08d8341f9910bebdbe777240bb28fbc79d2f74be
+  flutter_secure_storage_macos: 6ceee8fbc7f484553ad17f79361b556259df89aa
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   geolocator_apple: 72a78ae3f3e4ec0db62117bd93e34523f5011d58
   mobile_scanner: 54ceceae0c8da2457e26a362a6be5c61154b1829

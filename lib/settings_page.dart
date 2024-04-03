@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
+import 'env.dart';
 import 'home.dart';
 
 const String loginPageRoute = '/login';
@@ -168,7 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<bool> _verifyPassword(String password, String email) async {
-    var url = Uri.parse('http://localhost:5000/verify_password');
+    var url = Uri.parse('${Env.ACCOUNT_SERVER}/verify_password');
     var response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -209,7 +210,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<bool> _updateEmail(String newEmail) async {
-    var url = Uri.parse('http://localhost:5000/update_email');
+    var url = Uri.parse(Env.ACCOUNT_SERVER + '/update_email');
     var response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -222,7 +223,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
     Future<bool> _updatePassword(String newPassword) async {
-    var url = Uri.parse('http://localhost:5000/update_password');
+    var url = Uri.parse('${Env.ACCOUNT_SERVER}/update_password');
     var response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -282,7 +283,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<bool> _updateUsername(String newUsername) async {
-    var url = Uri.parse('http://localhost:5000/update_username');
+    var url = Uri.parse('${Env.ACCOUNT_SERVER}/update_username');
     var response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},

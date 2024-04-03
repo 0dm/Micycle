@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'account_details_page.dart';
 import 'home.dart';
+import 'env.dart';
 import 'main.dart';
 import 'settings_page.dart';
 import 'theme/theme.dart';
@@ -152,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () async {
                 // Attempt to delete the account
                 var response = await http.post(
-                  Uri.parse('http://localhost:5000/delete_account'),
+                  Uri.parse('${Env.ACCOUNT_SERVER}/delete_account'),
                   headers: <String, String>{
                     'Content-Type': 'application/json',
                   },

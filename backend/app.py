@@ -131,7 +131,7 @@ def payment_success():
         )
 
         # Redirect to the login page or another success page
-        return redirect('http://localhost:8080/#/login', code=302)
+        return redirect('http://172.174.183.117:5000/#/login', code=302)
     except Exception as e:
         app.logger.error(f"Error processing payment success: {e}")
         return jsonify({"error": "Failed to process payment success"}), 500

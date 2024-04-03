@@ -4,6 +4,8 @@ PODS:
   - flutter_barcode_sdk (2.2.0):
     - DynamsoftBarcodeReader (= 9.6.21)
     - Flutter
+  - flutter_secure_storage (3.3.1):
+    - Flutter
   - geolocator_apple (1.2.0):
     - Flutter
   - google_maps_flutter_ios (0.0.1):
@@ -124,6 +126,7 @@ PODS:
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_barcode_sdk (from `.symlinks/plugins/flutter_barcode_sdk/ios`)
+  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/ios`)
@@ -163,6 +166,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_barcode_sdk:
     :path: ".symlinks/plugins/flutter_barcode_sdk/ios"
+  flutter_secure_storage:
+    :path: ".symlinks/plugins/flutter_secure_storage/ios"
   geolocator_apple:
     :path: ".symlinks/plugins/geolocator_apple/ios"
   google_maps_flutter_ios:
@@ -184,6 +189,7 @@ SPEC CHECKSUMS:
   DynamsoftBarcodeReader: 7544bb56f3ea940003688355267e6e32ca999030
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_barcode_sdk: 5ab04c18c3230e7ddf09c02267c96e58a25eb8b8
+  flutter_secure_storage: 7953c38a04c3fdbb00571bcd87d8e3b5ceb9daec
   geolocator_apple: 6cbaf322953988e009e5ecb481f07efece75c450
   google_maps_flutter_ios: f135b968a67c05679e0a53538e900b5c174b0d99
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
