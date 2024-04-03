@@ -40,7 +40,7 @@ class StationBottomSheet extends StatelessWidget {
                 .size
                 .width, // Set image width to full screen width
             height: MediaQuery.of(context).size.height *
-                0.3, // Adjust the size accordingly
+                0.15, // Adjust the size accordingly
             fit: BoxFit
                 .cover, // Cover the entire width while keeping aspect ratio
           ),
@@ -60,7 +60,6 @@ class StationBottomSheet extends StatelessWidget {
           BarChartSample3(
             data: intList,
           ),
-          SizedBox(height: 16),
           Align(
             alignment:
                 Alignment.centerLeft, // Aligning only this widget to the left

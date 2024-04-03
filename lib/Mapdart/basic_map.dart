@@ -14,7 +14,7 @@ import 'dart:async';
 import 'station_bubble.dart';
 import 'station_form.dart';
 import 'bottom_sheet.dart';
-import 'station.dart';
+import 'station_models.dart';
 
 class BasicMap extends StatefulWidget {
   const BasicMap({super.key});
@@ -43,7 +43,6 @@ class _BasicMapState extends State<BasicMap> {
   bool _canFetchStation = true;
   bool isWaitingForMapTap = false;
 
-
   void fetchStation() async {
     if (_canFetchStation == false){
       return;
@@ -54,12 +53,11 @@ class _BasicMapState extends State<BasicMap> {
     });
 
     var response;
-    var url = Uri.http(Env.STATIONS_SERVER, 'stations');
+    var url = Uri.http('localhost:8000', 'stations');
 
     try {
       response = await http.get(url);
     } catch (e) {
-      print("Error123");
       print(e);
       return;
     }
@@ -108,11 +106,17 @@ class _BasicMapState extends State<BasicMap> {
                       Uri _url = Uri.parse( 'https://www.google.com/maps/dir/?api=1&destination=$sidex,$sidey'); launchUrl(_url);
                       }, 
                     icon: Icon(Icons.directions)
-                  ),
+                  ), Visibility(
+                  visible: (Home.isAdmin),
+                  child:
                 Row(
-                  children: [
-                  StationBubble(
-                    onPressed: (){_onEditStationPressed(index + 1);}, 
+                  children: [ 
+                   StationBubble(
+                    onPressed: (){
+                     _onEditStationPressed(index + 1);
+                    Navigator.of(context).pop();
+                    fetchStation();
+                    }, 
                     icon: Icon(Icons.edit)
                   ),
                   StationBubble(
@@ -120,7 +124,7 @@ class _BasicMapState extends State<BasicMap> {
                     icon: Icon(Icons.delete)
                   ),
                   ],
-                ),
+                ),),
               ],
                   );
             },
@@ -213,12 +217,14 @@ class _BasicMapState extends State<BasicMap> {
                         .end, // Aligns the column's children to the start, matching your design intent.
                     children: <Widget>[
                       if(Home.isAdmin) FloatingActionButton(
+                        heroTag: null,
                         onPressed: promptUserForLocation,
                         child: Icon(Icons.add_location),
                         tooltip: 'Add Station',
                       ),
                       SizedBox(height: 8),
                       FloatingActionButton(
+                          heroTag: null,
                           onPressed: () {
                             isProgramMoved = true;
                             ifMoved = false;
@@ -287,12 +293,12 @@ class _BasicMapState extends State<BasicMap> {
                 bikes: int.parse(bikesController.text),
                 predicted_num_bike: []
               );
-              
+
               // Send POST request to add the new station
-              final Uri apiUrl = Uri.parse('${Env.STATIONS_SERVER}/stations');
+              var url = Uri.http('localhost:8000', 'stations/');
               try {
                 final response = await http.post(
-                  apiUrl,
+                  url,
                   headers: <String, String>{
                     'Content-Type': 'application/json; charset=UTF-8',
                   },
@@ -301,39 +307,13 @@ class _BasicMapState extends State<BasicMap> {
 
                 if (response.statusCode == 200) {
                   print('Station added successfully');
-                  // Add the station to the local list and map markers if needed
-                  setState(() {
-                    stations.add(newStation);
-                    locMarker.add(
-                      Marker(
-                        point: newStation.location,
-                        child: GestureDetector(
-                          onTap: () => _showBottomSheet(stations.length - 1),
-                          child: StationLogo,
-                        ),
-                      ),
-                    );
-                  });
+                  fetchStation();
                 } else {
                   print('Failed to add station. Error: ${response.statusCode}');
                 }
               } catch (error) {
                 print('Failed to add station. Error: $error');
               }
-
-              setState(() {
-                stations.add(newStation);
-                locMarker.add(
-                  Marker(
-                    point: newStation.location,
-                    child: GestureDetector(
-                      onTap: () => _showBottomSheet(stations.length - 1),
-                      child: StationLogo,
-                    ),
-                  ),
-                );
-              });
-              // Close the dialog
               Navigator.of(context).pop();
           }
         );
@@ -343,7 +323,7 @@ class _BasicMapState extends State<BasicMap> {
 
   void _onEditStationPressed(int index) async {
     var response;
-    var url = Uri.http('172.174.183.117:8000', 'stations/$index');
+    var url = Uri.http('localhost:8000', 'stations/$index');
 
     try {
       response = await http.get(url);
@@ -362,6 +342,9 @@ class _BasicMapState extends State<BasicMap> {
     TextEditingController longitudeController = TextEditingController(text: station.location.longitude.toString());
     TextEditingController bikesController = TextEditingController(text: station.bikes.toString());
 
+    url = Uri.http('localhost:8000', 'stations/');
+
+    // ignore: use_build_context_synchronously
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -372,9 +355,38 @@ class _BasicMapState extends State<BasicMap> {
           latitudeController: latitudeController, 
           longitudeController: longitudeController, 
           bikesController: bikesController, 
-          onPressed: () async 
-          {
-                //stations.put
+          onPressed: () async {
+              var editedStation = updateStation(
+                id: index,
+                name: nameController.text,
+                address: addressController.text,
+                location: LatLng(
+                  double.parse(latitudeController.text),
+                  double.parse(longitudeController.text),
+                ),
+                bikes: int.parse(bikesController.text),
+              );
+
+              try {
+                final response = await http.put(
+                  url,
+                  headers: <String, String>{
+                    'Content-Type': 'application/json; charset=UTF-8',
+                  },
+                  body: jsonEncode(editedStation.toJson()),
+                );
+
+                if (response.statusCode == 200) {
+                  print('Station edited successfully');
+                  fetchStation();
+                } else {
+                  print('Failed to edit station. Error: ${response.statusCode}');
+                }
+              } catch (error) {
+                print('Failed to edit station. Error: $error');
+              }
+
+              Navigator.of(context).pop();
           }
         );
       }
@@ -384,24 +396,27 @@ class _BasicMapState extends State<BasicMap> {
   //make sure to raise proper errors here
   void _onDeleteStationPressed(int index) async {
     var response;
-    var url = Uri.http('172.174.183.117:8000', 'stations/');
+    var url = Uri.http('localhost:8000', 'stations/');
+
+    var deletedStation = deleteStation(id: index);
     try {
       final response = await http.delete(
         url,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: json.encode( {"station_id": index}),
+        body: json.encode(deletedStation.toJson()),
       );
-
-      if(response == 200){
-        print("works");
+      if(response.statusCode == 200){
+        print('Station deleted successfully');
       }else{
-        print("did not work");
+        print('Failed to delete station. Error: ${response.statusCode}');
       }
     }catch (error) {
       print('Failed to delete station. Error: $error');
     }
+    Navigator.of(context).pop();
+    fetchStation();
     
   }
 
