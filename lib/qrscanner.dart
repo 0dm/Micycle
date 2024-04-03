@@ -69,7 +69,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
     // Construct the data to be sent in the POST request
     Map<String, String> postData = {
-      'message': result, 
+      'id': result, 
       'email': Home.email
     };
 
@@ -77,7 +77,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
     // Make the POST request to the server
     final response = await http.post(
-      Uri.parse('${Env.STATIONS_SERVER}/qr'), 
+      Uri.parse('http://localhost:8000/qr'), 
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -100,6 +100,8 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   void _checkStatus() async {
+          print('http://localhost:8000/active/${Home.email}');
+
     final response = await http.get(
       Uri.parse('http://localhost:8000/active/${Home.email}'),
       headers: <String, String>{

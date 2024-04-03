@@ -201,6 +201,18 @@ def get_user_info(email):
     else:
         return jsonify({"error": "User not found"}), 404
 
+@app.route("/get_user_info_id/<id>", methods=["GET"])
+def get_user_info_id(id):
+    user = User.query.filter_by(id=id).first()
+    if user:
+        return jsonify({
+            "id": user.id,
+            "display_name": user.display_name,
+            "is_admin": user.is_admin,
+            "email": user.email
+        }), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
 
 if __name__ == "__main__":
     with app.app_context():
