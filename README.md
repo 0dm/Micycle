@@ -1,4 +1,4 @@
-# MiCycle - CSC301
+# Micycle - CSC301
 Cross-platform bike sharing app designed for the city of Mississauga. Created with Flutter.
 
 features:
